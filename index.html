@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>next Level life safer – Click-Through Prototype</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#15294B; --navy-2:#1E3A66; --ink:#1A2433; --slate:#56657C; --slate-2:#8A97A8;
+  --line:#E9EDF3; --line-2:#DBE1EA; --bg:#F3F6FA; --surface:#FFFFFF;
+  --chip:#EEF2F7; --chip-ink:#46566E; --accent:#2D7D6B;
+  --ok:#1F9D6B; --ok-50:#EAF6F0; --warn:#B97E1A; --warn-50:#F8F1E1;
+  --danger:#C24339; --danger-50:#FAEBE9; --info:#2F6BB3; --info-50:#EBF1FA;
+  --r-s:10px; --r-m:13px; --r-l:18px;
+  --sh-sm:0 1px 2px rgba(21,41,75,.05),0 1px 3px rgba(21,41,75,.04);
+  --sh-md:0 6px 22px rgba(21,41,75,.09);
+  --sh-lg:0 14px 44px rgba(21,41,75,.14);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--ink);height:100dvh;overflow:hidden;padding:0}
+
+/* === LAYOUT === */
+.app-wrapper{max-width:1100px;margin:0 auto;display:flex;align-items:flex-start;justify-content:center;gap:28px;flex-wrap:wrap}
+.sidebar{width:280px;background:rgba(255,255,255,.85);backdrop-filter:blur(8px);border-radius:18px;padding:20px;box-shadow:0 8px 32px rgba(21,41,75,.10);max-height:820px;overflow-y:auto;flex-shrink:0}
+.sidebar h1{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.sidebar h1 img{height:22px}
+.sidebar .lead{font-size:12.5px;color:var(--slate);line-height:1.55;margin-bottom:14px}
+.sidebar .section{font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.07em;margin:12px 0 8px}
+.menu-item{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin-bottom:6px;font-family:inherit;font-size:13px;color:var(--ink);cursor:pointer;font-weight:500;transition:all .15s}
+.menu-item:hover{border-color:var(--line-2);background:var(--bg)}
+.menu-item.active{background:var(--navy);color:#fff;border-color:var(--navy);font-weight:600}
+.hint{margin-top:12px;background:var(--info-50);border:1px solid #CFE0F4;border-radius:10px;padding:11px 13px;font-size:12px;color:#1E4E84;line-height:1.5}
+.hint b{display:block;font-weight:600;color:#15294B;margin-bottom:3px}
+
+.phone-area{display:flex;flex-direction:column;align-items:center;gap:14px}
+.crumb{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--navy);background:rgba(255,255,255,.78);padding:6px 14px;border-radius:30px;box-shadow:0 1px 2px rgba(21,41,75,.06);min-height:28px;display:flex;align-items:center;gap:6px}
+.crumb em{font-style:normal;color:var(--slate-2);font-weight:500}
+
+.phone{width:100%;height:100dvh;background:var(--bg);border-radius:0;box-shadow:none;overflow:hidden;position:fixed;inset:0}
+
+/* === SCREEN VISIBILITY === */
+.screen{position:absolute;inset:0;display:none;flex-direction:column;background:var(--bg)}
+.screen.active{display:flex}
+.screen > .sbar{flex-shrink:0}
+.screen > .content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.screen > .content::-webkit-scrollbar{display:none}
+.screen > .nav{flex-shrink:0}
+
+/* === STATUS BAR & APPBAR === */
+.sbar{height:env(safe-area-inset-top,20px);padding:0;overflow:hidden;background:var(--bg)}
+.sbar .dots{display:flex;gap:6px;align-items:center}
+.icn{width:20px;height:20px;display:inline-block;vertical-align:middle;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;fill:none;flex-shrink:0}
+.appbar{background:var(--surface);padding:13px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.logo{height:25px;display:block}
+.appbar-actions{display:flex;gap:8px;align-items:center}
+.ibtn{width:38px;height:38px;border-radius:11px;border:1px solid var(--line-2);background:var(--surface);display:flex;align-items:center;justify-content:center;color:var(--slate);cursor:pointer;position:relative}
+.ibtn .icn{width:19px;height:19px}
+.ibtn .badge{position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:var(--danger);border:2px solid var(--surface)}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--navy);color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer}
+
+.titlebar{background:var(--surface);padding:11px 16px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.backbtn{width:36px;height:36px;border-radius:11px;border:1px solid var(--line-2);background:var(--surface);display:flex;align-items:center;justify-content:center;color:var(--ink);cursor:pointer}
+.backbtn.bare{border-color:transparent}
+.backbtn .icn{width:20px;height:20px}
+.titlebar h1{font-size:17px;font-weight:600;flex:1}
+.titlebar .spacer{width:36px}
+
+/* === SECTIONS === */
+.pad{padding:0 18px}
+.sec-head{display:flex;align-items:center;justify-content:space-between;padding:20px 18px 11px}
+.sec-head h2{font-size:14px;font-weight:600}
+.sec-head .link{font-size:13px;color:var(--accent);font-weight:500;cursor:pointer;display:flex;align-items:center;gap:2px}
+.sec-head .link .icn{width:15px;height:15px}
+.sec-head .note{font-size:12px;color:var(--slate)}
+.muted{color:var(--slate)}
+.stack>*+*{margin-top:9px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--sh-sm)}
+.card-pad{padding:16px}
+
+.chip{width:40px;height:40px;border-radius:11px;background:var(--chip);color:var(--chip-ink);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chip .icn{width:20px;height:20px}
+.chip.sm{width:30px;height:30px;border-radius:9px}
+.chip.sm .icn{width:16px;height:16px}
+
+.pill{font-size:11px;font-weight:600;padding:4px 10px;border-radius:30px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;border:1px solid transparent}
+.pill .icn{width:12px;height:12px}
+.pill.ok{background:var(--ok-50);color:var(--ok)}
+.pill.warn{background:var(--warn-50);color:var(--warn)}
+.pill.danger{background:var(--danger-50);color:var(--danger)}
+.pill.neutral{background:var(--chip);color:var(--slate)}
+.pill.info{background:var(--info-50);color:var(--info)}
+
+.row{display:flex;align-items:center;gap:13px;padding:13px 15px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);cursor:pointer;width:100%;font-family:inherit;text-align:left;transition:border-color .15s,transform .1s}
+.row:active{transform:scale(.99)}
+.row:hover{border-color:var(--line-2)}
+.row .meta{flex:1;min-width:0}
+.row .t{font-size:14px;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .s{font-size:12.5px;color:var(--slate)}
+.row .chev{color:var(--slate-2)}
+.row .chev .icn{width:18px;height:18px}
+
+/* === BOTTOM NAV === */
+.nav{background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:stretch;padding:8px 2px max(20px,env(safe-area-inset-bottom))}
+.navitem{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;border:none;background:none;cursor:pointer;color:var(--slate-2);font-family:inherit;padding:2px 0}
+.navitem .icn{width:21px;height:21px}
+.navitem span{font-size:9.5px;font-weight:500}
+.navitem.active{color:var(--navy)}
+.navitem.active span{font-weight:600}
+.navitem.navadd{flex:0 0 auto;padding:0;justify-content:center}
+.navitem.navadd .plus{width:52px;height:52px;border-radius:16px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:var(--sh-md);margin-top:-18px;border:3px solid var(--surface)}
+.navitem.navadd .plus .icn{width:24px;height:24px}
+
+/* === HOME / OVERVIEW === */
+.hero{background:var(--navy);background-image:linear-gradient(160deg,#1C3358,#13243F);padding:19px 18px 20px;color:#fff}
+.hero .hi{font-size:13px;color:#A9C2D6;font-weight:500}
+.hero .name{font-size:22px;font-weight:700;margin:1px 0 15px}
+.switcher{display:flex;gap:8px;background:rgba(255,255,255,.08);padding:6px;border-radius:15px;overflow-x:auto}
+.switcher::-webkit-scrollbar{display:none}
+.pchip{display:flex;align-items:center;gap:8px;padding:7px 13px 7px 7px;border-radius:10px;border:none;background:none;color:rgba(255,255,255,.72);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .15s}
+.pchip.active{background:#fff;color:var(--navy);font-weight:600}
+.pchip .pic{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:rgba(255,255,255,.16);color:#fff}
+.pchip.active .pic{background:var(--navy);color:#fff}
+.pchip.addp{border:1.5px dashed rgba(255,255,255,.32)}
+.pchip.addp .icn{width:16px;height:16px}
+
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:11px;padding:15px 18px 4px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:14px;box-shadow:var(--sh-sm)}
+.tile .chip{margin-bottom:10px}
+.tile .n{font-size:23px;font-weight:700;line-height:1}
+.tile .l{font-size:12px;color:var(--slate);margin-top:4px}
+
+.banner{margin:14px 18px 0;display:flex;gap:12px;align-items:flex-start;padding:13px 15px;border-radius:var(--r-m);border:1px solid}
+.banner.warn{background:var(--warn-50);border-color:#ECDDB9}
+.banner.info{background:var(--info-50);border-color:#CFE0F4}
+.banner.danger{background:var(--danger-50);border-color:#EFCAC6}
+.banner .icn.lead{width:20px;height:20px;flex-shrink:0;margin-top:1px}
+.banner.warn .icn.lead{color:var(--warn)}
+.banner.info .icn.lead{color:var(--info)}
+.banner.danger .icn.lead{color:var(--danger)}
+.banner .bt{font-size:13px;line-height:1.5}
+.banner .bt b{font-weight:600;display:block;margin-bottom:1px}
+.banner.warn .bt{color:#6E4C10}
+.banner.danger .bt{color:#8A2F27}
+.banner.info .bt{color:#1E4E84}
+
+.btn{width:100%;border:none;border-radius:var(--r-m);padding:15px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s}
+.btn .icn{width:18px;height:18px}
+.btn.primary{background:var(--navy);color:#fff}
+.btn.primary:active{opacity:.88}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line-2)}
+.btn-pad{padding:16px 18px}
+
+/* === UPLOAD === */
+.steps{display:flex;gap:6px;padding:16px 18px 4px}
+.steps .d{height:5px;border-radius:3px;flex:1;background:var(--line-2)}
+.steps .d.done{background:var(--accent)}
+.steps .d.active{background:var(--navy)}
+.dropzone{margin:16px 18px 0;border:2px dashed var(--line-2);background:var(--surface);border-radius:var(--r-l);padding:28px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;cursor:pointer}
+.dropzone .dz-ic{width:52px;height:52px;border-radius:15px;background:var(--chip);display:flex;align-items:center;justify-content:center;color:var(--chip-ink)}
+.dropzone .dz-ic .icn{width:25px;height:25px}
+.dropzone .dz-t{font-size:15px;font-weight:600}
+.dropzone .dz-s{font-size:13px;color:var(--slate)}
+.or{display:flex;align-items:center;gap:12px;margin:14px 18px;color:var(--slate-2);font-size:12px}
+.or::before,.or::after{content:'';flex:1;height:1px;background:var(--line-2)}
+.flabel{font-size:12px;font-weight:600;color:var(--slate);text-transform:uppercase;letter-spacing:.04em;margin-bottom:9px;display:flex;align-items:center;gap:5px}
+.req{color:var(--danger)}
+.selectrow{display:flex;gap:8px;flex-wrap:wrap}
+.selchip{display:flex;align-items:center;gap:7px;padding:8px 13px;border-radius:10px;border:1.5px solid var(--line-2);background:var(--surface);cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;color:var(--ink);transition:all .15s}
+.selchip.on{border-color:var(--navy);background:var(--navy);color:#fff}
+.selchip .mp{width:22px;height:22px;border-radius:6px;background:var(--chip);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--navy)}
+.selchip.on .mp{background:rgba(255,255,255,.18);color:#fff}
+.typegrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.typebtn{display:flex;align-items:center;gap:9px;padding:13px;border-radius:11px;border:1.5px solid var(--line-2);background:var(--surface);cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;color:var(--ink);transition:all .15s}
+.typebtn .icn{width:19px;height:19px;color:var(--slate)}
+.typebtn.on{border-color:var(--navy);background:#F2F5FA;color:var(--navy)}
+.typebtn.on .icn{color:var(--navy)}
+
+/* === OCR === */
+.ocrdoc{margin:16px 18px 0;background:#F6F4EE;border:1px solid var(--line);border-radius:var(--r-m);height:124px;position:relative;overflow:hidden;padding:16px;display:flex;flex-direction:column;gap:7px}
+.ocrdoc .ln{height:9px;border-radius:5px;background:#E3DED3}
+.ocrdoc .ln.hl{background:#F2E6C0}
+.ocrdoc .ln.w60{width:60%}
+.ocrdoc .ln.w80{width:80%}
+.ocrdoc .ln.w40{width:40%}
+.ocrtag{position:absolute;top:10px;right:10px;background:var(--accent);color:#fff;font-size:10.5px;font-weight:600;padding:4px 9px;border-radius:30px;display:flex;align-items:center;gap:4px}
+.ocrtag .icn{width:12px;height:12px}
+.fblock{margin-bottom:13px}
+.flabelrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.ftag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:30px}
+.ftag.req{background:var(--danger-50);color:var(--danger)}
+.ftag.opt{background:var(--chip);color:var(--slate)}
+.ftag.ocr{background:var(--info-50);color:var(--info)}
+.finput{width:100%;border:1.5px solid var(--line-2);border-radius:10px;padding:11px 13px;font-family:inherit;font-size:14px;color:var(--ink);background:var(--surface);outline:none}
+.finput:focus{border-color:var(--navy)}
+.finput.pref{border-color:#BCD2EE;background:var(--info-50)}
+.finput::placeholder{color:var(--slate-2)}
+.divline{margin:6px 18px 14px;height:1px;background:var(--line)}
+.subhead{padding:6px 18px 10px;display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600}
+.subhead .icn{width:16px;height:16px;color:var(--slate)}
+.toggle{margin:0 18px;display:flex;align-items:center;justify-content:space-between;padding:13px 15px;border:1.5px solid var(--line);border-radius:var(--r-m);background:var(--surface)}
+.toggle-info{flex:1}
+.toggle .tg-t{font-size:14px;font-weight:500}
+.toggle .tg-s{font-size:12px;color:var(--slate)}
+.sw{width:44px;height:25px;border-radius:13px;background:var(--ok);position:relative;cursor:pointer;flex-shrink:0}
+.sw::after{content:'';position:absolute;top:3px;left:22px;width:19px;height:19px;border-radius:50%;background:#fff}
+.sw.off{background:var(--line-2)}
+.sw.off::after{left:3px}
+
+/* === LIBRARY === */
+.search{margin:13px 18px 0;display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid var(--line-2);border-radius:12px;background:var(--surface);color:var(--slate-2);font-size:14px}
+.search .icn{width:18px;height:18px}
+.filters{display:flex;gap:8px;overflow-x:auto;padding:13px 18px 4px}
+.filters::-webkit-scrollbar{display:none}
+.fpill{white-space:nowrap;padding:7px 13px;border-radius:30px;border:1.5px solid var(--line-2);background:var(--surface);font-family:inherit;font-size:12.5px;font-weight:500;color:var(--slate);cursor:pointer;flex-shrink:0;display:flex;align-items:center;gap:5px}
+.fpill .icn{width:14px;height:14px}
+.fpill.on{border-color:var(--navy);background:var(--navy);color:#fff}
+.phead{display:flex;align-items:center;gap:11px;padding:18px 18px 11px}
+.pav{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;background:var(--navy)}
+.phead .pn{font-size:15px;font-weight:600}
+.noresults{margin:24px 18px;text-align:center;padding:32px 22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--sh-sm)}
+.noresults .nr-ic{width:50px;height:50px;border-radius:50%;background:var(--chip);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;color:var(--slate-2)}
+.noresults .nr-ic .icn{width:24px;height:24px}
+.noresults h3{font-size:16px;font-weight:600;margin-bottom:6px}
+.noresults p{font-size:13px;color:var(--slate);line-height:1.5}
+
+/* === CATEGORY DETAIL === */
+.cathero{padding:18px 18px 19px;color:#fff;background:linear-gradient(150deg,#1C3358,#13243F)}
+.cathero .ch-top{display:flex;align-items:center;gap:13px;margin-bottom:14px}
+.cathero .ch-ic{width:46px;height:46px;border-radius:13px;background:rgba(255,255,255,.13);display:flex;align-items:center;justify-content:center}
+.cathero .ch-ic .icn{width:23px;height:23px}
+.cathero h1{font-size:20px;font-weight:700}
+.cathero .ch-sub{font-size:13px;color:#A9C2D6;margin-top:1px}
+.cathero .ch-person{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.12);padding:6px 12px;border-radius:30px;font-size:12px;font-weight:500}
+.cathero .ch-person .pic{width:22px;height:22px;border-radius:6px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700}
+
+.summrow{display:flex;gap:10px;padding:14px 18px 4px}
+.summbox{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:12px 10px;text-align:center;box-shadow:var(--sh-sm)}
+.summbox .sn{font-size:20px;font-weight:700}
+.summbox .sl{font-size:11px;color:var(--slate);margin-top:2px}
+
+.timeline{padding:8px 18px 4px}
+.tlitem{display:flex;gap:13px}
+.tlrail{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:32px}
+.tldot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid;background:var(--surface);z-index:2}
+.tldot .icn{width:15px;height:15px}
+.tldot.ok{border-color:var(--ok);color:var(--ok)}
+.tldot.warn{border-color:var(--warn);color:var(--warn)}
+.tlline{width:2px;flex:1;background:var(--line-2);margin:2px 0}
+.tlitem:last-child .tlline{display:none}
+.tlcard{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:12px 14px;margin-bottom:11px;box-shadow:var(--sh-sm)}
+.tlcard .tl-h{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.tlcard .tl-name{font-size:14.5px;font-weight:600}
+.tlcard .tl-date{font-size:12.5px;color:var(--slate);margin-top:3px;display:flex;align-items:center;gap:5px}
+.tlcard .tl-date .icn{width:13px;height:13px}
+.tlcard .tl-extra{font-size:12px;color:var(--slate-2);margin-top:6px;padding-top:8px;border-top:1px solid var(--line)}
+
+.inforow{display:flex;align-items:center;gap:13px;padding:14px 15px;border-bottom:1px solid var(--line)}
+.inforow:last-child{border-bottom:none}
+.inforow .ir-meta{flex:1}
+.inforow .ir-k{font-size:12px;color:var(--slate);margin-bottom:2px}
+.inforow .ir-v{font-size:15px;font-weight:600}
+.bigval{text-align:center;padding:6px 0 4px}
+.bigval .bv{font-size:44px;font-weight:700;color:var(--navy);line-height:1}
+.bigval .bl{font-size:13px;color:var(--slate);margin-top:6px}
+
+.sharebar{display:flex;gap:9px;padding:14px 18px 4px}
+.sharebtn{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:13px 8px;border:1.5px solid var(--line-2);border-radius:var(--r-m);background:var(--surface);cursor:pointer;font-family:inherit;color:var(--ink)}
+.sharebtn .icn{width:20px;height:20px;color:var(--navy)}
+.sharebtn span{font-size:11.5px;font-weight:500}
+.offline{margin:14px 18px 0;display:flex;gap:11px;align-items:flex-start;padding:13px 15px;background:var(--chip);border:1px solid var(--line);border-radius:var(--r-m);font-size:12.5px;color:var(--slate);line-height:1.5}
+.offline .icn{width:18px;height:18px;flex-shrink:0;margin-top:1px;color:var(--slate-2)}
+
+/* === HEALTH === */
+.ak-hero{padding:18px;color:#fff;background:linear-gradient(150deg,#1C3358,#10203A)}
+.ak-hero .ak-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.ak-hero .ak-ic{width:44px;height:44px;border-radius:13px;background:rgba(255,255,255,.13);display:flex;align-items:center;justify-content:center}
+.ak-hero .ak-ic .icn{width:22px;height:22px}
+.ak-hero h1{font-size:19px;font-weight:700}
+.ak-hero .ak-sub{font-size:12.5px;color:#A9C2D6;margin-top:1px}
+.ak-hero .ak-id{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:13px 15px;margin-top:13px}
+.ak-hero .ak-id .ak-name{font-size:17px;font-weight:700}
+.ak-hero .ak-id .ak-line{font-size:12.5px;color:#BBD0E1;margin-top:3px;display:flex;gap:14px;flex-wrap:wrap}
+.akblock{margin:14px 18px 0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--sh-sm);overflow:hidden}
+.akblock .ak-bh{display:flex;align-items:center;gap:9px;padding:13px 15px 11px;border-bottom:1px solid var(--line)}
+.akblock .ak-bh .chip{width:32px;height:32px;border-radius:9px}
+.akblock .ak-bh .chip .icn{width:17px;height:17px}
+.akblock .ak-bh .ak-bt{font-size:13px;font-weight:600}
+.akblock .ak-bh .ak-bv{margin-left:auto;font-size:20px;font-weight:700;color:var(--navy)}
+.akbody{padding:6px 15px 13px}
+.akbody.tight{padding:11px 15px 13px}
+.akbody .ak-item{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--line)}
+.akbody .ak-item:last-child{border-bottom:none}
+.akbody .ak-item .ak-n{font-size:14px;font-weight:600;flex:1}
+.akbody .ak-item .ak-d{font-size:12.5px;color:var(--slate)}
+.akbody .ak-empty{font-size:13px;color:var(--slate-2);padding:8px 0}
+.ak-chiplist{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0}
+.ak-warnchip{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:10px;font-size:13px;font-weight:600;border:1.5px solid}
+.ak-warnchip.severe{background:var(--danger-50);border-color:#EAC0BC;color:var(--danger)}
+.ak-warnchip.mild{background:var(--warn-50);border-color:#E7D4AC;color:var(--warn)}
+.ak-warnchip .icn{width:15px;height:15px}
+.ak-foot{padding:6px 18px 0;font-size:11.5px;color:var(--slate-2);display:flex;align-items:center;gap:6px}
+.ak-foot .icn{width:13px;height:13px}
+
+/* === MODAL (within phone only) === */
+.modal{position:absolute;inset:0;background:rgba(14,28,51,.55);z-index:60;display:none;align-items:flex-end;justify-content:center}
+.modal.show{display:flex}
+.sheet{background:#fff;border-radius:26px 26px 0 0;padding:24px 22px 32px;width:100%;max-height:92%;overflow-y:auto}
+.sheet::-webkit-scrollbar{display:none}
+.sheet .grip{width:40px;height:4px;background:var(--line-2);border-radius:3px;margin:0 auto 18px}
+.sheet .sh-ic{width:46px;height:46px;border-radius:13px;background:var(--chip);color:var(--navy);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.sheet .sh-ic .icn{width:23px;height:23px}
+.sheet h2{font-size:19px;font-weight:700;margin-bottom:9px}
+.sheet p{font-size:13.5px;color:var(--slate);line-height:1.6;margin-bottom:14px}
+.sheet .pts{background:var(--bg);border-radius:12px;padding:14px;margin-bottom:18px}
+.sheet .pt{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;line-height:1.5}
+.sheet .pt+.pt{margin-top:10px}
+.sheet .pt .icn{width:17px;height:17px;color:var(--accent);flex-shrink:0;margin-top:1px}
+
+.toast{position:absolute;left:18px;right:18px;bottom:90px;background:var(--navy);color:#fff;padding:13px 16px;border-radius:var(--r-m);font-size:13px;font-weight:500;display:none;align-items:center;gap:9px;z-index:40;box-shadow:var(--sh-lg)}
+.toast.show{display:flex}
+.toast .icn{width:18px;height:18px;color:#86D9B4}
+
+/* === PROFILE / ACCOUNT === */
+.ov-hero{background:var(--navy);background-image:linear-gradient(160deg,#1C3358,#13243F);padding:18px;color:#fff}
+.ov-hero .ov-person{display:flex;align-items:center;gap:12px}
+.ov-hero .ov-av{width:46px;height:46px;border-radius:13px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700}
+.ov-hero .ov-n{font-size:18px;font-weight:700}
+.ov-hero .ov-s{font-size:13px;color:#A9C2D6}
+.ov-hero .ov-status{margin-top:13px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);padding:9px 12px;border-radius:11px;font-size:13px;font-weight:500}
+.ov-hero .ov-status .icn{width:18px;height:18px;color:#86D9B4}
+
+@media (max-width: 800px){
+  .sidebar{width:100%;max-width:380px;max-height:none}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></symbol>
+<symbol id="i-activity" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+<symbol id="i-search-x" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="9" y1="9" x2="13" y2="13"/><line x1="13" y1="9" x2="9" y2="13"/></symbol>
+<symbol id="i-chev-right" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></symbol>
+<symbol id="i-chev-left" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></symbol>
+<symbol id="i-arrow-right" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+<symbol id="i-check-circle" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></symbol>
+<symbol id="i-file-check" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="9 15 11 17 15 13"/></symbol>
+<symbol id="i-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+<symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></symbol>
+<symbol id="i-droplet" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></symbol>
+<symbol id="i-shield-check" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></symbol>
+<symbol id="i-warn" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></symbol>
+<symbol id="i-wifi-off" viewBox="0 0 24 24"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
+<symbol id="i-qr" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="14" y1="14" x2="14" y2="17"/><line x1="17" y1="14" x2="21" y2="14"/><line x1="21" y1="17" x2="21" y2="21"/><line x1="14" y1="21" x2="17" y2="21"/><line x1="17" y1="17" x2="17.01" y2="17"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+<symbol id="i-pencil" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+<symbol id="i-pill" viewBox="0 0 24 24"><path d="M10.5 20.5 20 11a5 5 0 0 0-7-7l-9.5 9.5a5 5 0 0 0 7 7Z"/><path d="m8.5 8.5 7 7"/></symbol>
+<symbol id="i-syringe" viewBox="0 0 24 24"><path d="m18 2 4 4"/><path d="m17 7 3-3"/><path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5"/><path d="m9 11 4 4"/><path d="m5 19-3 3"/><path d="m14 4 6 6"/></symbol>
+<symbol id="i-stetho" viewBox="0 0 24 24"><path d="M4 3a1 1 0 0 0-1 1v5a6 6 0 0 0 6 6 6 6 0 0 0 6-6V4a1 1 0 0 0-1-1"/><path d="M9 15v1a6 6 0 0 0 12 0v-4"/><circle cx="21" cy="10" r="2"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></symbol>
+<symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></symbol>
+<symbol id="i-files" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+<symbol id="i-aster" viewBox="0 0 24 24"><line x1="12" y1="6" x2="12" y2="18"/><line x1="5.4" y1="9" x2="18.6" y2="15"/><line x1="18.6" y1="9" x2="5.4" y2="15"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.9 5.8L20 10l-6.1 1.2L12 17l-1.9-5.8L4 10l6.1-1.2z"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+<symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+<symbol id="i-leaf" viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-sig" viewBox="0 0 24 24"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/></symbol>
+<symbol id="i-wifi" viewBox="0 0 24 24"><path d="M5 13a10 10 0 0 1 14 0"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M2 8.82a15 15 0 0 1 20 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></symbol>
+<symbol id="i-batt" viewBox="0 0 24 24"><rect x="1" y="6" width="18" height="12" rx="2"/><line x1="23" y1="11" x2="23" y2="13"/><rect x="3" y="8" width="13" height="8" rx="1" fill="currentColor" stroke="none"/></symbol>
+</defs></svg>
+
+<div class="phone" id="phone">
+    <div id="ocrFullscreenOverlay" onclick="ocrCloseFullscreen()" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,.92);z-index:9999;align-items:center;justify-content:center;flex-direction:column;border-radius:0">
+      <img id="ocrFullImg" src="" style="max-width:100%;max-height:75%;object-fit:contain;border-radius:8px;padding:0 16px">
+      <div style="display:flex;align-items:center;gap:16px;margin-top:18px">
+        <button onclick="event.stopPropagation();ocrNavFull(-1)" id="ocrFullPrev" style="background:rgba(255,255,255,.15);border:none;border-radius:50%;width:38px;height:38px;color:#fff;font-size:20px;cursor:pointer;padding:0">&#8249;</button>
+        <span id="ocrFullCounter" style="color:#fff;font-size:13px;font-weight:600"></span>
+        <button onclick="event.stopPropagation();ocrNavFull(1)" id="ocrFullNext" style="background:rgba(255,255,255,.15);border:none;border-radius:50%;width:38px;height:38px;color:#fff;font-size:20px;cursor:pointer;padding:0">&#8250;</button>
+      </div>
+      <button onclick="ocrCloseFullscreen()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);border:none;border-radius:50%;width:36px;height:36px;color:#fff;font-size:18px;cursor:pointer;padding:0">&times;</button>
+    </div>
+    <div class="screen active" id="screen-home">
+<div class="sbar"><span>9:41</span><span class="dots"><svg class="icn"><use href="#i-sig"/></svg><svg class="icn"><use href="#i-wifi"/></svg><svg class="icn"><use href="#i-batt"/></svg></span></div>
+<div class="content">
+  <div class="appbar">
+    <img class="logo" alt="Logo" id="homeLogo">
+    <div class="appbar-actions">
+      <button class="ibtn"><svg class="icn"><use href="#i-bell"/></svg><span class="badge"></span></button>
+      <button class="avatar" id="ovAvatar">SM</button>
+    </div>
+  </div>
+  <div class="hero">
+    <div class="hi" id="ovHi">Guten Morgen</div>
+    <div class="name" id="ovName">Simone Müller</div>
+    <div class="switcher" id="ovSwitcher">
+      <button class="pchip active" onclick="selectOv(this,'SM')"><span class="pic">SM</span>Simone</button>
+      <button class="pchip" onclick="selectOv(this,'LM')"><span class="pic">LM</span>Lena</button>
+      <button class="pchip" onclick="selectOv(this,'TM')"><span class="pic">TM</span>Tom</button>
+      <button class="pchip addp" onclick="openAddProfile()"><svg class="icn"><use href="#i-plus"/></svg>Profil</button>
+    </div>
+  </div>
+  <div id="ovBanner"></div>
+  <div class="tiles">
+    <div class="tile"><div class="chip"><svg class="icn"><use href="#i-files"/></svg></div><div class="n" id="ovDocCount">5</div><div class="l">Dokumente</div></div>
+    <div class="tile"><div class="chip"><svg class="icn"><use href="#i-users"/></svg></div><div class="n">3</div><div class="l">Profile in Familie</div></div>
+  </div>
+  <div class="sec-head"><h2>Zuletzt hinzugefügt</h2><span class="link">Alle <svg class="icn"><use href="#i-chev-right"/></svg></span></div>
+  <div class="pad stack" id="ovDocs"></div>
+  <div class="sec-head"><h2>Schnellzugriff</h2></div>
+  <div class="pad stack" style="padding-bottom:22px">
+    <button class="row" onclick="goScreen('health')">
+      <div class="chip"><svg class="icn"><use href="#i-activity"/></svg></div>
+      <div class="meta"><div class="t">Gesundheitsübersicht öffnen</div><div class="s">Alle Eckdaten zum Vorzeigen</div></div>
+      <span class="chev"><svg class="icn"><use href="#i-chev-right"/></svg></span>
+    </button>
+  </div>
+</div>
+<div class="nav">
+<button class="navitem active" onclick="goScreen('home')"><svg class="icn"><use href="#i-home"/></svg><span>Übersicht</span></button>
+<button class="navitem" onclick="goScreen('health')"><svg class="icn"><use href="#i-activity"/></svg><span>Gesundheit</span></button>
+<button class="navitem navadd" onclick="goScreen('upload')"><span class="plus"><svg class="icn"><use href="#i-plus"/></svg></span></button>
+<button class="navitem" onclick="goScreen('docs')"><svg class="icn"><use href="#i-folder"/></svg><span>Dokumente</span></button>
+<button class="navitem" onclick="goScreen('profile')"><svg class="icn"><use href="#i-user"/></svg><span>Profil</span></button>
+</div>
+</div><div class="screen" id="screen-upload">
+<div class="sbar"><span>9:43</span><span class="dots"><svg class="icn"><use href="#i-sig"/></svg><svg class="icn"><use href="#i-wifi"/></svg><svg class="icn"><use href="#i-batt"/></svg></span></div>
+<div class="content">
+  <div class="titlebar">
+    <button class="backbtn" onclick="goScreen('home')"><svg class="icn"><use href="#i-chev-left"/></svg></button>
+    <h1>Dokument hinzufügen</h1><div class="spacer"></div>
+  </div>
+  <div class="steps"><div class="d done"></div><div class="d active"></div><div class="d"></div></div>
+  <div class="dropzone" onclick="goScreen('ocr')">
+    <div class="dz-ic"><svg class="icn"><use href="#i-camera"/></svg></div>
+    <div class="dz-t">Foto aufnehmen</div>
+    <div class="dz-s">Kamera öffnen und Dokument scannen</div>
+  </div>
+  <div class="or">oder</div>
+  <input type="file" id="fileInput" accept="image/png,image/jpeg,application/pdf" multiple style="display:none" onchange="handleFileUpload(event)">
+  <button class="row" style="margin:0 18px;width:auto" onclick="document.getElementById('fileInput').click()">
+    <div class="chip"><svg class="icn"><use href="#i-image"/></svg></div>
+    <div class="meta"><div class="t">Datei aus Galerie</div><div class="s">PDF, JPG oder PNG hochladen</div></div>
+    <span class="chev"><svg class="icn"><use href="#i-chev-right"/></svg></span>
+  </button>
+  <div class="pad" style="padding-top:20px">
+    <div class="flabel">Für wen <span class="req">*</span></div>
+    <div class="selectrow" id="upPerson">
+      <button class="selchip on" data-key="SM" onclick="setSelchip(this,'upPerson')"><span class="mp">SM</span>Simone</button>
+      <button class="selchip" data-key="LM" onclick="setSelchip(this,'upPerson')"><span class="mp">LM</span>Lena</button>
+      <button class="selchip" data-key="TM" onclick="setSelchip(this,'upPerson')"><span class="mp">TM</span>Tom</button>
+    </div>
+    <div class="banner info" style="margin:10px 0 0"><svg class="icn lead"><use href="#i-info"/></svg><div class="bt">Neue Person? Lege das Profil zuerst auf der <b>Übersicht</b> an.</div></div>
+  </div>
+  <div class="pad" style="padding-top:18px">
+    <div class="flabel">Dokumenttyp <span class="req">*</span></div>
+    <div class="typegrid" id="upType">
+      <button class="typebtn on" data-type="Impfpass" onclick="setSelchip(this,'upType')"><svg class="icn"><use href="#i-syringe"/></svg>Impfpass</button>
+      <button class="typebtn" data-type="Befund" onclick="setSelchip(this,'upType')"><svg class="icn"><use href="#i-stetho"/></svg>Befund</button>
+      <button class="typebtn" data-type="Medikament" onclick="setSelchip(this,'upType')"><svg class="icn"><use href="#i-pill"/></svg>Medikament</button>
+      <button class="typebtn" data-type="Sonstiges" onclick="setSelchip(this,'upType')"><svg class="icn"><use href="#i-file"/></svg>Sonstiges</button>
+    </div>
+  </div>
+  <div class="btn-pad">
+    <button class="btn primary" onclick="goScreen('ocr')">Weiter zur Prüfung <svg class="icn"><use href="#i-arrow-right"/></svg></button>
+  </div>
+</div>
+</div><div class="screen" id="screen-ocr">
+<div class="sbar"><span>9:45</span><span class="dots"><svg class="icn"><use href="#i-sig"/></svg><svg class="icn"><use href="#i-wifi"/></svg><svg class="icn"><use href="#i-batt"/></svg></span></div>
+<div class="content">
+  <div class="titlebar">
+    <button class="backbtn" onclick="goScreen('upload')"><svg class="icn"><use href="#i-chev-left"/></svg></button>
+    <h1>Daten prüfen</h1><div class="spacer"></div>
+  </div>
+  <div class="steps"><div class="d done"></div><div class="d done"></div><div class="d active"></div></div>
+  <div id="ocrDocPreview" style="margin:16px 18px 0;border-radius:var(--r-m);overflow:hidden;position:relative;background:#F6F4EE;border:1px solid var(--line)">
+    <div id="ocrSwiper" style="display:flex;transition:transform .28s ease;will-change:transform"></div>
+    <div id="ocrPlaceholder" style="height:124px;padding:16px;display:flex;flex-direction:column;gap:7px">
+      <div class="ln w40"></div><div class="ln hl w80"></div><div class="ln w60"></div>
+      <div class="ln hl"></div><div class="ln w80"></div><div class="ln hl w40"></div>
+      <div class="ocrtag"><svg class="icn"><use href="#i-spark"/></svg>OCR erkannt</div>
+    </div>
+    <div class="ocrtag" id="ocrTagBadge" style="display:none"><svg class="icn"><use href="#i-spark"/></svg>OCR erkannt</div>
+    <div id="ocrCounter" style="display:none;position:absolute;top:8px;left:10px;background:rgba(0,0,0,.45);color:#fff;font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px"></div>
+    <button id="ocrPrev" onclick="ocrNav(-1)" style="display:none;position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.45);border:none;border-radius:50%;width:30px;height:30px;color:#fff;font-size:16px;cursor:pointer;line-height:1;padding:0">&#8249;</button>
+    <button id="ocrNext" onclick="ocrNav(1)" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.45);border:none;border-radius:50%;width:30px;height:30px;color:#fff;font-size:16px;cursor:pointer;line-height:1;padding:0">&#8250;</button>
+    <button id="ocrFullBtn" onclick="ocrFullscreen()" style="display:none;position:absolute;top:8px;right:8px;background:rgba(0,0,0,.45);border:none;border-radius:8px;width:30px;height:30px;color:#fff;cursor:pointer;padding:0;font-size:14px" title="Vollbild">&#x26F6;</button>
+  </div>
+  <div class="banner info" style="margin:14px 18px 0"><svg class="icn lead"><use href="#i-spark"/></svg><div class="bt">Felder automatisch ausgefüllt – bitte prüfen und anpassen.</div></div>
+  <div class="subhead" style="padding-top:16px"><svg class="icn" style="color:var(--danger)"><use href="#i-aster"/></svg>Pflichtfelder</div>
+  <div class="pad">
+    <div class="fblock"><div class="flabelrow"><span class="flabel" style="margin:0">Name <span class="req">*</span></span><span class="ftag ocr">OCR</span></div><input id="ocrName" class="finput pref" value="Lena Müller"></div>
+    <div class="fblock"><div class="flabelrow"><span class="flabel" style="margin:0">Geburtsdatum <span class="req">*</span></span><span class="ftag ocr">OCR</span></div><input id="ocrDob" class="finput pref" value="14.03.2019"></div>
+    <div class="fblock"><div class="flabelrow"><span class="flabel" style="margin:0">Kategorie <span class="req">*</span></span></div><input id="ocrKat" class="finput" value="Impfpass"></div>
+    <div class="fblock"><div class="flabelrow"><span class="flabel" style="margin:0">Ausstellungsdatum <span class="req">*</span></span><span class="ftag ocr">OCR</span></div><input id="ocrDate" class="finput pref" value="26.02.2021"></div>
+  </div>
+  <div class="divline"></div>
+  <div class="subhead"><svg class="icn" style="color:var(--accent)"><use href="#i-heart"/></svg>Gesundheitsdetails <span class="ftag opt" style="margin-left:auto">Optional</span></div>
+  <div class="banner info" style="margin:0 18px 14px"><svg class="icn lead"><use href="#i-info"/></svg><div class="bt">Impfstoff-Name konnte nicht erkannt werden – bitte manuell ergänzen.</div></div>
+  <div class="pad">
+    <div class="fblock"><div class="flabelrow"><span class="flabel" style="margin:0">Impfung gegen</span><span class="ftag opt">Optional</span></div><input id="ocrImpfName" class="finput pref" value="COVID-19"></div>
+    <div class="fblock"><div class="flabelrow"><span class="flabel" style="margin:0">Impfstoff</span><span class="ftag opt">Optional</span></div><input id="ocrImpfStoff" class="finput" placeholder="Nicht erkannt – bitte eintragen" style="border-color:#EEC4BF"></div>
+    <div class="fblock"><div class="flabelrow"><span class="flabel" style="margin:0">Notiz</span><span class="ftag opt">Optional</span></div><input id="ocrNote" class="finput" placeholder="Freitext, z. B. Arzt / Klinik"></div>
+  </div>
+  <div class="toggle">
+    <div class="toggle-info"><div class="tg-t">Ablauf-Erinnerung</div><div class="tg-s">90 Tage vor Fälligkeit benachrichtigen</div></div>
+    <div class="sw" id="ocrSw" onclick="toggleReminder(this)"></div>
+  </div>
+  <div id="ocrExpiry" style="padding:14px 18px 0">
+    <div class="fblock"><div class="flabelrow"><span class="flabel" style="margin:0">Ablaufdatum <span class="req">*</span></span><span class="ftag req">Erforderlich für Erinnerung</span></div><input class="finput" value="22.05.2030"></div>
+    <div class="banner info" style="margin:0"><svg class="icn lead"><use href="#i-info"/></svg><div class="bt">Du wirst am <b>22.02.2030</b> erinnert (90 Tage vorher).</div></div>
+  </div>
+  <div class="btn-pad"><button class="btn primary" onclick="saveDocument()"><svg class="icn"><use href="#i-check"/></svg> Speichern</button></div>
+</div>
+</div><div class="screen" id="screen-docs">
+<div class="sbar"><span>9:47</span><span class="dots"><svg class="icn"><use href="#i-sig"/></svg><svg class="icn"><use href="#i-wifi"/></svg><svg class="icn"><use href="#i-batt"/></svg></span></div>
+<div class="content">
+  <div class="appbar">
+    <img class="logo" alt="Logo" id="docsLogo">
+    <div class="appbar-actions">
+      <button class="ibtn"><svg class="icn"><use href="#i-search"/></svg></button>
+      <button class="avatar" id="docAvatar">SM</button>
+    </div>
+  </div>
+  <div class="search"><svg class="icn"><use href="#i-search"/></svg>Dokument oder Notiz suchen…</div>
+  <div class="filters" id="docPersonFilter">
+    <button class="fpill on" onclick="setFilter(this,'docPersonFilter','person','all')">Alle Personen</button>
+    <button class="fpill" onclick="setFilter(this,'docPersonFilter','person','SM')">Simone</button>
+    <button class="fpill" onclick="setFilter(this,'docPersonFilter','person','LM')">Lena</button>
+    <button class="fpill" onclick="setFilter(this,'docPersonFilter','person','TM')">Tom</button>
+  </div>
+  <div class="filters" id="docCatFilter" style="padding-top:0">
+    <button class="fpill on" onclick="setFilter(this,'docCatFilter','cat','all')">Alle Kategorien</button>
+    <button class="fpill" onclick="setFilter(this,'docCatFilter','cat','impf')"><svg class="icn"><use href="#i-syringe"/></svg>Impfpass</button>
+    <button class="fpill" onclick="setFilter(this,'docCatFilter','cat','blut')"><svg class="icn"><use href="#i-droplet"/></svg>Blutgruppe</button>
+    <button class="fpill" onclick="setFilter(this,'docCatFilter','cat','aller')"><svg class="icn"><use href="#i-shield"/></svg>Allergien</button>
+    <button class="fpill" onclick="setFilter(this,'docCatFilter','cat','medi')"><svg class="icn"><use href="#i-pill"/></svg>Medikamente</button>
+    <button class="fpill" onclick="setFilter(this,'docCatFilter','cat','bef')"><svg class="icn"><use href="#i-stetho"/></svg>Befund</button>
+  </div>
+  <div id="libBody"></div>
+  <div id="libNo" class="noresults" style="display:none">
+    <div class="nr-ic"><svg class="icn"><use href="#i-search-x"/></svg></div>
+    <h3>Keine Ergebnisse</h3>
+    <p>Für diese Auswahl wurden keine Dokumente gefunden. Probiere einen anderen Filter.</p>
+  </div>
+</div>
+<div class="nav">
+<button class="navitem" onclick="goScreen('home')"><svg class="icn"><use href="#i-home"/></svg><span>Übersicht</span></button>
+<button class="navitem" onclick="goScreen('health')"><svg class="icn"><use href="#i-activity"/></svg><span>Gesundheit</span></button>
+<button class="navitem navadd" onclick="goScreen('upload')"><span class="plus"><svg class="icn"><use href="#i-plus"/></svg></span></button>
+<button class="navitem active" onclick="goScreen('docs')"><svg class="icn"><use href="#i-folder"/></svg><span>Dokumente</span></button>
+<button class="navitem" onclick="goScreen('profile')"><svg class="icn"><use href="#i-user"/></svg><span>Profil</span></button>
+</div>
+</div><div class="screen" id="screen-cat-impf">
+<div class="sbar"><span>9:48</span><span class="dots"><svg class="icn"><use href="#i-sig"/></svg><svg class="icn"><use href="#i-wifi"/></svg><svg class="icn"><use href="#i-batt"/></svg></span></div>
+<div class="content">
+  <div class="titlebar">
+    <button class="backbtn" onclick="goScreen('docs')"><svg class="icn"><use href="#i-chev-left"/></svg></button>
+    <h1>Impfpass</h1>
+    <button class="backbtn bare"><svg class="icn"><use href="#i-pencil"/></svg></button>
+  </div>
+  <div class="cathero">
+    <div class="ch-top"><div class="ch-ic"><svg class="icn"><use href="#i-syringe"/></svg></div><div><h1>Impfpass</h1><div class="ch-sub">Vollständiger Impfverlauf</div></div></div>
+    <div class="ch-person"><span class="pic">SM</span>Simone Müller</div>
+  </div>
+  <div class="summrow"><div class="summbox"><div class="sn">6</div><div class="sl">Impfungen</div></div><div class="summbox"><div class="sn" style="color:var(--ok)">5</div><div class="sl">Aktuell</div></div><div class="summbox"><div class="sn" style="color:var(--warn)">1</div><div class="sl">Fällig</div></div></div>
+  <div id="userDocs-impf"></div>
+  <div class="sec-head"><h2>Verlauf</h2><span class="note">Neueste zuerst</span></div>
+<div class="timeline">
+  <div class="tlitem"><div class="tlrail"><div class="tldot warn"><svg class="icn"><use href="#i-clock"/></svg></div><div class="tlline"></div></div><div class="tlcard"><div class="tl-h"><div class="tl-name">MMR-Auffrischung</div><span class="pill warn"><svg class="icn"><use href="#i-clock"/></svg>Fällig</span></div><div class="tl-date"><svg class="icn"><use href="#i-calendar"/></svg>Empfohlen bis 06.2025</div></div></div>
+  <div class="tlitem"><div class="tlrail"><div class="tldot ok"><svg class="icn"><use href="#i-check"/></svg></div><div class="tlline"></div></div><div class="tlcard"><div class="tl-h"><div class="tl-name">COVID-19 Booster</div><span class="pill ok"><svg class="icn"><use href="#i-check"/></svg>Erledigt</span></div><div class="tl-date"><svg class="icn"><use href="#i-calendar"/></svg>15.09.2023</div><div class="tl-extra">Comirnaty · Hausarztpraxis Dr. Berg</div></div></div>
+  <div class="tlitem"><div class="tlrail"><div class="tldot ok"><svg class="icn"><use href="#i-check"/></svg></div><div class="tlline"></div></div><div class="tlcard"><div class="tl-h"><div class="tl-name">Tetanus</div><span class="pill ok"><svg class="icn"><use href="#i-check"/></svg>Erledigt</span></div><div class="tl-date"><svg class="icn"><use href="#i-calendar"/></svg>20.06.2020</div><div class="tl-extra">Nächste Auffrischung: 2030</div></div></div>
+  <div class="tlitem"><div class="tlrail"><div class="tldot ok"><svg class="icn"><use href="#i-check"/></svg></div><div class="tlline"></div></div><div class="tlcard"><div class="tl-h"><div class="tl-name">Masern (MMR)</div><span class="pill ok"><svg class="icn"><use href="#i-check"/></svg>Erledigt</span></div><div class="tl-date"><svg class="icn"><use href="#i-calendar"/></svg>12.03.2018</div></div></div>
+  <div class="tlitem"><div class="tlrail"><div class="tldot ok"><svg class="icn"><use href="#i-check"/></svg></div></div><div class="tlcard"><div class="tl-h"><div class="tl-name">Hepatitis A + B</div><span class="pill ok"><svg class="icn"><use href="#i-check"/></svg>Erledigt</span></div><div class="tl-date"><svg class="icn"><use href="#i-calendar"/></svg>04.10.2016</div></div></div>
+</div>
+  <div class="sharebar">
+    <button class="sharebtn" onclick="showToast('toast-cat-impf')"><svg class="icn"><use href="#i-download"/></svg><span>PDF</span></button>
+    <button class="sharebtn" onclick="showToast('toast-cat-impf')"><svg class="icn"><use href="#i-link"/></svg><span>Link</span></button>
+    <button class="sharebtn" onclick="showToast('toast-cat-impf')"><svg class="icn"><use href="#i-qr"/></svg><span>QR-Code</span></button>
+  </div>
+  <div class="offline"><svg class="icn"><use href="#i-wifi-off"/></svg><span>Im Offline-Modus sind Dokument &amp; Daten verfügbar. Freigabe-Aktionen werden bei Verbindung freigeschaltet.</span></div>
+  <div style="height:18px"></div>
+</div>
+<div class="toast" id="toast-cat-impf"><svg class="icn"><use href="#i-check-circle"/></svg>Erfolgreich geteilt</div>
+<div class="nav">
+<button class="navitem" onclick="goScreen('home')"><svg class="icn"><use href="#i-home"/></svg><span>Übersicht</span></button>
+<button class="navitem" onclick="goScreen('health')"><svg class="icn"><use href="#i-activity"/></svg><span>Gesundheit</span></button>
+<button class="navitem navadd" onclick="goScreen('upload')"><span class="plus"><svg class="icn"><use href="#i-plus"/></svg></span></button>
+<button class="navitem active" onclick="goScreen('docs')"><svg class="icn"><use href="#i-folder"/></svg><span>Dokumente</span></button>
+<button class="navitem" onclick="goScreen('profile')"><svg class="icn"><use href="#i-user"/></svg><span>Profil</span></button>
+</div>
+</div><div class="screen" id="screen-cat-blut">
+<div class="sbar"><span>9:49</span><span class="dots"><svg class="icn"><use href="#i-sig"/></svg><svg class="icn"><use href="#i-wifi"/></svg><svg class="icn"><use href="#i-batt"/></svg></span></div>
+<div class="content">
+  <div class="titlebar">
+    <button class="backbtn" onclick="goScreen('docs')"><svg class="icn"><use href="#i-chev-left"/></svg></button>
+    <h1>Blutgruppe</h1>
+    <button class="backbtn bare"><svg class="icn"><use href="#i-pencil"/></svg></button>
+  </div>
+  <div class="cathero">
+    <div class="ch-top"><div class="ch-ic"><svg class="icn"><use href="#i-droplet"/></svg></div><div><h1>Blutgruppe</h1><div class="ch-sub">Wichtig im Notfall</div></div></div>
+    <div class="ch-person"><span class="pic">SM</span>Simone Müller</div>
+  </div>
+  
+  <div class="pad" style="padding-top:15px"><div class="card card-pad"><div class="bigval"><div class="bv">A+</div><div class="bl">Blutgruppe A, Rhesusfaktor positiv</div></div></div></div>
+<div class="pad" style="padding-top:10px"><div class="card">
+  <div class="inforow"><div class="chip"><svg class="icn"><use href="#i-file-check"/></svg></div><div class="ir-meta"><div class="ir-k">Quelle</div><div class="ir-v" style="font-size:14px">Laborbefund Klinikum München</div></div></div>
+  <div class="inforow"><div class="chip"><svg class="icn"><use href="#i-calendar"/></svg></div><div class="ir-meta"><div class="ir-k">Bestätigt am</div><div class="ir-v" style="font-size:14px">12.01.2024</div></div></div>
+</div></div>
+<div class="banner info" style="margin:14px 18px 0"><svg class="icn lead"><use href="#i-info"/></svg><div class="bt">Diese Angabe wird auch in deiner <b>Gesundheitsübersicht</b> angezeigt.</div></div>
+  <div id="userDocs-blut"></div>
+  <div class="sharebar">
+    <button class="sharebtn" onclick="showToast('toast-cat-blut')"><svg class="icn"><use href="#i-download"/></svg><span>PDF</span></button>
+    <button class="sharebtn" onclick="showToast('toast-cat-blut')"><svg class="icn"><use href="#i-link"/></svg><span>Link</span></button>
+    <button class="sharebtn" onclick="showToast('toast-cat-blut')"><svg class="icn"><use href="#i-qr"/></svg><span>QR-Code</span></button>
+  </div>
+  <div class="offline"><svg class="icn"><use href="#i-wifi-off"/></svg><span>Im Offline-Modus sind Dokument &amp; Daten verfügbar. Freigabe-Aktionen werden bei Verbindung freigeschaltet.</span></div>
+  <div style="height:18px"></div>
+</div>
+<div class="toast" id="toast-cat-blut"><svg class="icn"><use href="#i-check-circle"/></svg>Erfolgreich geteilt</div>
+<div class="nav">
+<button class="navitem" onclick="goScreen('home')"><svg class="icn"><use href="#i-home"/></svg><span>Übersicht</span></button>
+<button class="navitem" onclick="goScreen('health')"><svg class="icn"><use href="#i-activity"/></svg><span>Gesundheit</span></button>
+<button class="navitem navadd" onclick="goScreen('upload')"><span class="plus"><svg class="icn"><use href="#i-plus"/></svg></span></button>
+<button class="navitem active" onclick="goScreen('docs')"><svg class="icn"><use href="#i-folder"/></svg><span>Dokumente</span></button>
+<button class="navitem" onclick="goScreen('profile')"><svg class="icn"><use href="#i-user"/></svg><span>Profil</span></button>
+</div>
+</div><div class="screen" id="screen-cat-aller">
+<div class="sbar"><span>9:49</span><span class="dots"><svg class="icn"><use href="#i-sig"/></svg><svg class="icn"><use href="#i-wifi"/></svg><svg class="icn"><use href="#i-batt"/></svg></span></div>
+<div class="content">
+  <div class="titlebar">
+    <button class="backbtn" onclick="goScreen('docs')"><svg class="icn"><use href="#i-chev-left"/></svg></button>
+    <h1>Allergien</h1>
+    <button class="backbtn bare"><svg class="icn"><use href="#i-pencil"/></svg></button>
+  </div>
+  <div class="cathero">
+    <div class="ch-top"><div class="ch-ic"><svg class="icn"><use href="#i-shield"/></svg></div><div><h1>Allergien</h1><div class="ch-sub">Wichtig vor Medikation &amp; Notfall</div></div></div>
+    <div class="ch-person"><span class="pic">SM</span>Simone Müller</div>
+  </div>
+  <div class="summrow"><div class="summbox"><div class="sn">3</div><div class="sl">Einträge</div></div><div class="summbox"><div class="sn" style="color:var(--danger)">1</div><div class="sl">Schwer</div></div><div class="summbox"><div class="sn" style="color:var(--warn)">2</div><div class="sl">Mild</div></div></div>
+  <div class="sec-head"><h2>Erfasste Allergien</h2><span class="link">Bearbeiten</span></div>
+<div class="pad"><div class="card">
+  <div class="inforow"><div class="chip"><svg class="icn"><use href="#i-warn"/></svg></div><div class="ir-meta"><div class="ir-v" style="font-size:15px">Nüsse (Haselnuss)</div><div class="ir-k">Nahrungsmittel · Schwellung, Atemnot</div></div><span class="pill danger">Schwer</span></div>
+  <div class="inforow"><div class="chip"><svg class="icn"><use href="#i-warn"/></svg></div><div class="ir-meta"><div class="ir-v" style="font-size:15px">Laktose</div><div class="ir-k">Nahrungsmittel · Bauchschmerzen, Übelkeit</div></div><span class="pill warn">Mild</span></div>
+  <div class="inforow"><div class="chip"><svg class="icn"><use href="#i-leaf"/></svg></div><div class="ir-meta"><div class="ir-v" style="font-size:15px">Pollen (Gräser)</div><div class="ir-k">Saisonal · Niesen, juckende Augen</div></div><span class="pill warn">Mild</span></div>
+</div></div>
+<div class="sec-head"><h2>Quelldokumente</h2></div>
+<div class="pad stack" style="padding-bottom:8px">
+  <button class="row"><div class="chip"><svg class="icn"><use href="#i-file"/></svg></div><div class="meta"><div class="t">Allergie-Befund Dr. Berg</div><div class="s">PDF · 14.02.2024</div></div><span class="chev"><svg class="icn"><use href="#i-chev-right"/></svg></span></button>
+</div>
+  <div id="userDocs-aller"></div>
+  <div class="sharebar">
+    <button class="sharebtn" onclick="showToast('toast-cat-aller')"><svg class="icn"><use href="#i-download"/></svg><span>PDF</span></button>
+    <button class="sharebtn" onclick="showToast('toast-cat-aller')"><svg class="icn"><use href="#i-link"/></svg><span>Link</span></button>
+    <button class="sharebtn" onclick="showToast('toast-cat-aller')"><svg class="icn"><use href="#i-qr"/></svg><span>QR-Code</span></button>
+  </div>
+  <div class="offline"><svg class="icn"><use href="#i-wifi-off"/></svg><span>Im Offline-Modus sind Dokument &amp; Daten verfügbar. Freigabe-Aktionen werden bei Verbindung freigeschaltet.</span></div>
+  <div style="height:18px"></div>
+</div>
+<div class="toast" id="toast-cat-aller"><svg class="icn"><use href="#i-check-circle"/></svg>Erfolgreich geteilt</div>
+<div class="nav">
+<button class="navitem" onclick="goScreen('home')"><svg class="icn"><use href="#i-home"/></svg><span>Übersicht</span></button>
+<button class="navitem" onclick="goScreen('health')"><svg class="icn"><use href="#i-activity"/></svg><span>Gesundheit</span></button>
+<button class="navitem navadd" onclick="goScreen('upload')"><span class="plus"><svg class="icn"><use href="#i-plus"/></svg></span></button>
+<button class="navitem active" onclick="goScreen('docs')"><svg class="icn"><use href="#i-folder"/></svg><span>Dokumente</span></button>
+<button class="navitem" onclick="goScreen('profile')"><svg class="icn"><use href="#i-user"/></svg><span>Profil</span></button>
+</div>
+</div><div class="screen" id="screen-cat-medi">
+<div class="sbar"><span>9:49</span><span class="dots"><svg class="icn"><use href="#i-sig"/></svg><svg class="icn"><use href="#i-wifi"/></svg><svg class="icn"><use href="#i-batt"/></svg></span></div>
+<div class="content">
+  <div class="titlebar">
+    <button class="backbtn" onclick="goScreen('docs')"><svg class="icn"><use href="#i-chev-left"/></svg></button>
+    <h1>Medikamente</h1>
+    <button class="backbtn bare"><svg class="icn"><use href="#i-pencil"/></svg></button>
+  </div>
+  <div class="cathero">
+    <div class="ch-top"><div class="ch-ic"><svg class="icn"><use href="#i-pill"/></svg></div><div><h1>Medikamente</h1><div class="ch-sub">Aktuelle Einnahme &amp; Verordnungen</div></div></div>
+    <div class="ch-person"><span class="pic">SM</span>Simone Müller</div>
+  </div>
+  <div class="summrow"><div class="summbox"><div class="sn">1</div><div class="sl">Dauerhaft</div></div><div class="summbox"><div class="sn">0</div><div class="sl">Akut</div></div><div class="summbox"><div class="sn">2</div><div class="sl">Frühere</div></div></div>
+  <div class="sec-head"><h2>Aktuelle Einnahme</h2><span class="link">Bearbeiten</span></div>
+<div class="pad"><div class="card">
+  <div class="inforow"><div class="chip"><svg class="icn"><use href="#i-pill"/></svg></div><div class="ir-meta"><div class="ir-v" style="font-size:15px">Vitamin D3</div><div class="ir-k">1.000 IE · 1× täglich morgens</div></div><span class="pill neutral">Dauerhaft</span></div>
+</div></div>
+<div class="sec-head"><h2>Frühere Verordnungen</h2></div>
+<div class="pad"><div class="card">
+  <div class="inforow"><div class="chip"><svg class="icn"><use href="#i-pill"/></svg></div><div class="ir-meta"><div class="ir-v" style="font-size:15px">Ibuprofen 400</div><div class="ir-k">Akut · 3× täglich · Mai 2024</div></div><span class="pill neutral">Beendet</span></div>
+  <div class="inforow"><div class="chip"><svg class="icn"><use href="#i-pill"/></svg></div><div class="ir-meta"><div class="ir-v" style="font-size:15px">Amoxicillin 500</div><div class="ir-k">Antibiotikum · 7 Tage · Okt 2023</div></div><span class="pill neutral">Beendet</span></div>
+</div></div>
+  <div id="userDocs-medi"></div>
+  <div class="sharebar">
+    <button class="sharebtn" onclick="showToast('toast-cat-medi')"><svg class="icn"><use href="#i-download"/></svg><span>PDF</span></button>
+    <button class="sharebtn" onclick="showToast('toast-cat-medi')"><svg class="icn"><use href="#i-link"/></svg><span>Link</span></button>
+    <button class="sharebtn" onclick="showToast('toast-cat-medi')"><svg class="icn"><use href="#i-qr"/></svg><span>QR-Code</span></button>
+  </div>
+  <div class="offline"><svg class="icn"><use href="#i-wifi-off"/></svg><span>Im Offline-Modus sind Dokument &amp; Daten verfügbar. Freigabe-Aktionen werden bei Verbindung freigeschaltet.</span></div>
+  <div style="height:18px"></div>
+</div>
+<div class="toast" id="toast-cat-medi"><svg class="icn"><use href="#i-check-circle"/></svg>Erfolgreich geteilt</div>
+<div class="nav">
+<button class="navitem" onclick="goScreen('home')"><svg class="icn"><use href="#i-home"/></svg><span>Übersicht</span></button>
+<button class="navitem" onclick="goScreen('health')"><svg class="icn"><use href="#i-activity"/></svg><span>Gesundheit</span></button>
+<button class="navitem navadd" onclick="goScreen('upload')"><span class="plus"><svg class="icn"><use href="#i-plus"/></svg></span></button>
+<button class="navitem active" onclick="goScreen('docs')"><svg class="icn"><use href="#i-folder"/></svg><span>Dokumente</span></button>
+<button class="navitem" onclick="goScreen('profile')"><svg class="icn"><use href="#i-user"/></svg><span>Profil</span></button>
+</div>
+</div><div class="screen" id="screen-health">
+<div class="sbar"><span>9:50</span><span class="dots"><svg class="icn"><use href="#i-sig"/></svg><svg class="icn"><use href="#i-wifi"/></svg><svg class="icn"><use href="#i-batt"/></svg></span></div>
+<div class="content">
+  <div class="appbar">
+    <img class="logo" alt="Logo" id="healthLogo">
+    <div class="appbar-actions">
+      <button class="ibtn"><svg class="icn"><use href="#i-share"/></svg></button>
+      <button class="avatar" id="hAvatar">SM</button>
+    </div>
+  </div>
+  <div class="ak-hero">
+    <div class="ak-top"><div class="ak-ic"><svg class="icn"><use href="#i-activity"/></svg></div><div><h1>Gesundheit</h1><div class="ak-sub">Alle Eckdaten – zum Vorzeigen &amp; Ablesen beim Arzt</div></div></div>
+    <div class="switcher" id="hSwitcher">
+      <button class="pchip active" onclick="selectHealth(this,'SM')"><span class="pic">SM</span>Simone</button>
+      <button class="pchip" onclick="selectHealth(this,'LM')"><span class="pic">LM</span>Lena</button>
+      <button class="pchip" onclick="selectHealth(this,'TM')"><span class="pic">TM</span>Tom</button>
+      <button class="pchip addp" onclick="openAddProfile()"><svg class="icn"><use href="#i-plus"/></svg>Profil</button>
+    </div>
+    <div class="ak-id"><div class="ak-name" id="hName">Simone Müller</div><div class="ak-line" id="hMeta"></div></div>
+  </div>
+  <div id="hStatus" style="margin:13px 18px 0;display:flex;align-items:center;gap:8px;background:var(--chip);border:1px solid var(--line);color:var(--slate);padding:10px 13px;border-radius:12px;font-size:13px;font-weight:500"><svg class="icn" style="width:17px;height:17px;color:var(--accent)"><use href="#i-shield-check"/></svg><span id="hStatusText"></span></div>
+  <div id="healthBody"></div>
+  <div class="ak-foot" id="hFoot"></div>
+  <div class="sharebar" style="padding-top:0;padding-bottom:18px">
+    <button class="sharebtn" onclick="showToast('toast-health')"><svg class="icn"><use href="#i-download"/></svg><span>Als PDF</span></button>
+    <button class="sharebtn" onclick="showToast('toast-health')"><svg class="icn"><use href="#i-share"/></svg><span>Teilen</span></button>
+  </div>
+</div>
+<div class="toast" id="toast-health"><svg class="icn"><use href="#i-check-circle"/></svg>Gesundheitsdaten exportiert</div>
+<div class="nav">
+<button class="navitem" onclick="goScreen('home')"><svg class="icn"><use href="#i-home"/></svg><span>Übersicht</span></button>
+<button class="navitem active" onclick="goScreen('health')"><svg class="icn"><use href="#i-activity"/></svg><span>Gesundheit</span></button>
+<button class="navitem navadd" onclick="goScreen('upload')"><span class="plus"><svg class="icn"><use href="#i-plus"/></svg></span></button>
+<button class="navitem" onclick="goScreen('docs')"><svg class="icn"><use href="#i-folder"/></svg><span>Dokumente</span></button>
+<button class="navitem" onclick="goScreen('profile')"><svg class="icn"><use href="#i-user"/></svg><span>Profil</span></button>
+</div>
+</div><div class="screen" id="screen-profile">
+<div class="sbar"><span>9:53</span><span class="dots"><svg class="icn"><use href="#i-sig"/></svg><svg class="icn"><use href="#i-wifi"/></svg><svg class="icn"><use href="#i-batt"/></svg></span></div>
+<div class="content">
+  <div class="appbar">
+    <img class="logo" alt="Logo" id="profLogo">
+    <div class="appbar-actions">
+      <button class="ibtn"><svg class="icn"><use href="#i-settings"/></svg></button>
+    </div>
+  </div>
+  <div class="ov-hero">
+    <div class="ov-person">
+      <div class="ov-av">SM</div>
+      <div><div class="ov-n">Simone Müller</div><div class="ov-s">simone.mueller@email.de · Account-Inhaberin</div></div>
+    </div>
+    <div class="ov-status"><svg class="icn"><use href="#i-users"/></svg>Familientarif · 3 von 5 Profilen genutzt</div>
+  </div>
+
+  <div class="sec-head"><h2>Abonnement</h2><span class="link">Verwalten</span></div>
+  <div class="pad"><div class="card">
+    <div class="inforow"><div class="chip"><svg class="icn"><use href="#i-users"/></svg></div><div class="ir-meta"><div class="ir-v" style="font-size:15px">Familientarif</div><div class="ir-k">2,50 € / Monat · nächste Abrechnung 15.07.2025</div></div><span class="pill ok"><svg class="icn"><use href="#i-check"/></svg>Aktiv</span></div>
+    <div class="inforow"><div class="chip"><svg class="icn"><use href="#i-file"/></svg></div><div class="ir-meta"><div class="ir-k">Zahlungsmethode</div><div class="ir-v" style="font-size:14px">SEPA-Lastschrift · DE89 •••• 4321</div></div><span class="chev"><svg class="icn"><use href="#i-chev-right"/></svg></span></div>
+  </div></div>
+
+  <div class="sec-head"><h2>Familienmitglieder</h2><span class="link">+ Hinzufügen</span></div>
+  <div class="pad stack">
+    <button class="row"><div class="chip"><svg class="icn"><use href="#i-user"/></svg></div><div class="meta"><div class="t">Simone Müller (Du)</div><div class="s">Account-Inhaberin · alle Rechte</div></div><span class="pill neutral">Owner</span></button>
+    <button class="row"><div class="chip"><svg class="icn"><use href="#i-user"/></svg></div><div class="meta"><div class="t">Lena Müller</div><div class="s">Kind · verwaltet von Simone</div></div><span class="chev"><svg class="icn"><use href="#i-chev-right"/></svg></span></button>
+    <button class="row"><div class="chip"><svg class="icn"><use href="#i-user"/></svg></div><div class="meta"><div class="t">Tom Müller</div><div class="s">Kind · verwaltet von Simone</div></div><span class="chev"><svg class="icn"><use href="#i-chev-right"/></svg></span></button>
+  </div>
+
+  <div class="sec-head"><h2>Datenschutz &amp; Einwilligung</h2></div>
+  <div class="pad"><div class="card">
+    <div class="inforow"><div class="chip"><svg class="icn"><use href="#i-shield-check"/></svg></div><div class="ir-meta"><div class="ir-v" style="font-size:14px">Gesundheitsdaten-Verarbeitung</div><div class="ir-k">Erteilt am 12.01.2024 · Version 2.1</div></div><span class="pill ok"><svg class="icn"><use href="#i-check"/></svg>Aktiv</span></div>
+    <div class="inforow"><div class="chip"><svg class="icn"><use href="#i-file"/></svg></div><div class="ir-meta"><div class="ir-v" style="font-size:14px">Datenschutzerklärung lesen</div><div class="ir-k">Vollständige Erklärung &amp; deine Rechte</div></div><span class="chev"><svg class="icn"><use href="#i-chev-right"/></svg></span></div>
+    <div class="inforow"><div class="chip"><svg class="icn"><use href="#i-info"/></svg></div><div class="ir-meta"><div class="ir-v" style="font-size:14px">Verarbeitete Datenkategorien</div><div class="ir-k">Stamm-, Dokument- &amp; Gesundheitsdaten</div></div><span class="chev"><svg class="icn"><use href="#i-chev-right"/></svg></span></div>
+  </div></div>
+
+  <div class="sec-head"><h2>Optionale Datenerhebung</h2><span class="note">Standardmäßig aus</span></div>
+  <div class="pad"><div class="card">
+    <div class="inforow"><div class="chip"><svg class="icn"><use href="#i-activity"/></svg></div><div class="ir-meta"><div class="ir-v" style="font-size:14px">Anonyme Nutzungsstatistik</div><div class="ir-k">Hilft uns, die App zu verbessern</div></div><div class="sw off" onclick="this.classList.toggle('off')"></div></div>
+    <div class="inforow"><div class="chip"><svg class="icn"><use href="#i-bell"/></svg></div><div class="ir-meta"><div class="ir-v" style="font-size:14px">Personalisierte Gesundheitstipps</div><div class="ir-k">basierend auf deinen Dokumenten</div></div><div class="sw off" onclick="this.classList.toggle('off')"></div></div>
+    <div class="inforow"><div class="chip"><svg class="icn"><use href="#i-share"/></svg></div><div class="ir-meta"><div class="ir-v" style="font-size:14px">Forschungsdaten beisteuern</div><div class="ir-k">Anonymisiert für medizinische Studien</div></div><div class="sw off" onclick="this.classList.toggle('off')"></div></div>
+  </div></div>
+
+  <div class="sec-head"><h2>Meine Rechte</h2><span class="note">DSGVO Art. 15–22</span></div>
+  <div class="pad stack">
+    <button class="row"><div class="chip"><svg class="icn"><use href="#i-eye"/></svg></div><div class="meta"><div class="t">Daten einsehen</div><div class="s">Alle über mich gespeicherten Daten anzeigen</div></div><span class="chev"><svg class="icn"><use href="#i-chev-right"/></svg></span></button>
+    <button class="row"><div class="chip"><svg class="icn"><use href="#i-download"/></svg></div><div class="meta"><div class="t">Daten exportieren</div><div class="s">Vollständiger Export als ZIP / JSON</div></div><span class="chev"><svg class="icn"><use href="#i-chev-right"/></svg></span></button>
+    <button class="row"><div class="chip"><svg class="icn"><use href="#i-pencil"/></svg></div><div class="meta"><div class="t">Daten korrigieren</div><div class="s">Falsche Angaben berichtigen lassen</div></div><span class="chev"><svg class="icn"><use href="#i-chev-right"/></svg></span></button>
+  </div>
+
+  <div class="sec-head"><h2>Account</h2></div>
+  <div class="pad stack" style="padding-bottom:10px">
+    <button class="row" onclick="openModal('logoutModal')"><div class="chip"><svg class="icn"><use href="#i-lock"/></svg></div><div class="meta"><div class="t">Abmelden</div><div class="s">Dokumente werden lokal nicht mehr angezeigt</div></div><span class="chev"><svg class="icn"><use href="#i-chev-right"/></svg></span></button>
+    <button class="row" onclick="openModal('withdrawModal')" style="border-color:#F0C3BE">
+      <div class="chip" style="background:var(--danger-50);color:var(--danger)"><svg class="icn"><use href="#i-warn"/></svg></div>
+      <div class="meta"><div class="t" style="color:var(--danger)">Einwilligung widerrufen</div><div class="s">Verarbeitung von Gesundheitsdaten beenden</div></div>
+      <span class="chev"><svg class="icn"><use href="#i-chev-right"/></svg></span>
+    </button>
+    <button class="row" onclick="openModal('deleteModal')" style="border-color:#F0C3BE">
+      <div class="chip" style="background:var(--danger-50);color:var(--danger)"><svg class="icn"><use href="#i-x"/></svg></div>
+      <div class="meta"><div class="t" style="color:var(--danger)">Account &amp; Daten löschen</div><div class="s">Alle Daten dauerhaft entfernen · nicht umkehrbar</div></div>
+      <span class="chev"><svg class="icn"><use href="#i-chev-right"/></svg></span>
+    </button>
+  </div>
+
+  <div class="ak-foot" style="padding:8px 18px 22px"><svg class="icn"><use href="#i-info"/></svg>App-Version 1.0.4 · Datenschutz Version 2.1 · Impressum</div>
+</div>
+
+<!-- modals (inside the phone, overlay it) -->
+<div class="modal" id="logoutModal" onclick="if(event.target===this)closeModal('logoutModal')">
+  <div class="sheet">
+    <div class="grip"></div>
+    <div class="sh-ic"><svg class="icn"><use href="#i-lock"/></svg></div>
+    <h2>Abmelden?</h2>
+    <p>Deine Dokumente bleiben sicher gespeichert. Beim nächsten Anmelden hast du wieder Zugriff.</p>
+    <button class="btn primary" style="margin-bottom:10px">Abmelden</button>
+    <button class="btn ghost" onclick="closeModal('logoutModal')">Abbrechen</button>
+  </div>
+</div>
+<div class="modal" id="withdrawModal" onclick="if(event.target===this)closeModal('withdrawModal')">
+  <div class="sheet">
+    <div class="grip"></div>
+    <div class="sh-ic" style="background:var(--warn-50);color:var(--warn)"><svg class="icn"><use href="#i-shield"/></svg></div>
+    <h2>Einwilligung widerrufen?</h2>
+    <p>Nach dem Widerruf kannst du keine Gesundheitsdokumente mehr hinzufügen oder verwalten.</p>
+    <div class="pts">
+      <div class="pt"><svg class="icn"><use href="#i-info"/></svg><div>Bisherige Dokumente bleiben <b>30 Tage zur Wiederherstellung</b> erhalten und werden danach gelöscht.</div></div>
+      <div class="pt"><svg class="icn"><use href="#i-shield-check"/></svg><div>Du kannst die Einwilligung jederzeit wieder erteilen.</div></div>
+    </div>
+    <button class="btn primary" style="background:var(--warn);margin-bottom:10px">Einwilligung widerrufen</button>
+    <button class="btn ghost" onclick="closeModal('withdrawModal')">Abbrechen</button>
+  </div>
+</div>
+<div class="modal" id="deleteModal" onclick="if(event.target===this)closeModal('deleteModal')">
+  <div class="sheet">
+    <div class="grip"></div>
+    <div class="sh-ic" style="background:var(--danger-50);color:var(--danger)"><svg class="icn"><use href="#i-warn"/></svg></div>
+    <h2 style="color:var(--danger)">Account &amp; Daten löschen?</h2>
+    <p>Diese Aktion ist endgültig und kann nicht rückgängig gemacht werden.</p>
+    <div class="pts">
+      <div class="pt"><svg class="icn" style="color:var(--danger)"><use href="#i-x"/></svg><div><b>Alle Dokumente</b> aller Profile werden gelöscht.</div></div>
+      <div class="pt"><svg class="icn" style="color:var(--danger)"><use href="#i-x"/></svg><div><b>Familienmitglieder</b> (Lena, Tom) verlieren ebenfalls den Zugriff.</div></div>
+      <div class="pt"><svg class="icn"><use href="#i-clock"/></svg><div><b>Aufbewahrungsfrist:</b> Gesundheitsdaten werden innerhalb von 30 Tagen vollständig gelöscht.</div></div>
+      <div class="pt"><svg class="icn"><use href="#i-download"/></svg><div>Du kannst vor dem Löschen deine Daten <b>exportieren</b>.</div></div>
+    </div>
+    <button class="btn primary" style="background:var(--danger);margin-bottom:10px"><svg class="icn"><use href="#i-x"/></svg> Endgültig löschen</button>
+    <button class="btn ghost" onclick="closeModal('deleteModal')">Abbrechen</button>
+  </div>
+</div>
+<div class="nav">
+<button class="navitem" onclick="goScreen('home')"><svg class="icn"><use href="#i-home"/></svg><span>Übersicht</span></button>
+<button class="navitem" onclick="goScreen('health')"><svg class="icn"><use href="#i-activity"/></svg><span>Gesundheit</span></button>
+<button class="navitem navadd" onclick="goScreen('upload')"><span class="plus"><svg class="icn"><use href="#i-plus"/></svg></span></button>
+<button class="navitem" onclick="goScreen('docs')"><svg class="icn"><use href="#i-folder"/></svg><span>Dokumente</span></button>
+<button class="navitem active" onclick="goScreen('profile')"><svg class="icn"><use href="#i-user"/></svg><span>Profil</span></button>
+</div>
+</div><div class="modal" id="consentModal" onclick="if(event.target===this)closeModal('consentModal')">
+  <div class="sheet">
+    <div class="grip"></div>
+    <div class="sh-ic"><svg class="icn"><use href="#i-shield-check"/></svg></div>
+    <h2>Datenschutz &amp; Einwilligung</h2>
+    <p>Bevor du dein erstes Gesundheitsdokument hochlädst, benötigen wir deine ausdrückliche Einwilligung zur Verarbeitung von Gesundheitsdaten.</p>
+    <div class="pts">
+      <div class="pt"><svg class="icn"><use href="#i-lock"/></svg><div><b>Verschlüsselt &amp; sicher</b> – Ende-zu-Ende, keine Weitergabe an Dritte.</div></div>
+      <div class="pt"><svg class="icn"><use href="#i-db"/></svg><div><b>Datensparsam</b> – nur was du hochlädst und eingibst, wird gespeichert.</div></div>
+      <div class="pt"><svg class="icn"><use href="#i-settings"/></svg><div><b>Deine Rechte</b> – Zugriff, Export, Korrektur und Löschung jederzeit.</div></div>
+    </div>
+    <button class="btn primary" style="margin-bottom:10px" onclick="closeModal('consentModal')"><svg class="icn"><use href="#i-check"/></svg> Einwilligung erteilen</button>
+    <button class="btn ghost" onclick="closeModal('consentModal')">Später</button>
+  </div>
+</div>
+<div class="modal" id="addProfileModal" onclick="if(event.target===this)closeModal('addProfileModal')">
+  <div class="sheet">
+    <div class="grip"></div>
+    <div class="sh-ic"><svg class="icn"><use href="#i-users"/></svg></div>
+    <h2>Neues Profil anlegen</h2>
+    <p>Lege ein zusätzliches Familienmitglied an, dessen Dokumente du mitverwalten möchtest. Bis zu 4 weitere Profile möglich.</p>
+    <div class="fblock"><div class="flabelrow"><span class="flabel" style="margin:0">Vor- und Nachname <span class="req">*</span></span></div><input class="finput" placeholder="z. B. Max Müller"></div>
+    <div class="fblock"><div class="flabelrow"><span class="flabel" style="margin:0">Geburtsdatum <span class="req">*</span></span></div><input class="finput" placeholder="TT.MM.JJJJ"></div>
+    <div class="fblock"><div class="flabelrow"><span class="flabel" style="margin:0">Beziehung <span class="req">*</span></span></div>
+      <div class="typegrid" id="apRel">
+        <button class="typebtn on" onclick="setSelchip(this,'apRel')"><svg class="icn"><use href="#i-user"/></svg>Kind</button>
+        <button class="typebtn" onclick="setSelchip(this,'apRel')"><svg class="icn"><use href="#i-heart"/></svg>Partner:in</button>
+        <button class="typebtn" onclick="setSelchip(this,'apRel')"><svg class="icn"><use href="#i-users"/></svg>Elternteil</button>
+        <button class="typebtn" onclick="setSelchip(this,'apRel')"><svg class="icn"><use href="#i-user"/></svg>Sonstiges</button>
+      </div>
+    </div>
+    <div class="banner info" style="margin:6px 0 14px"><svg class="icn lead"><use href="#i-shield-check"/></svg><div class="bt">Mit dem Anlegen bestätigst du, dass du berechtigt bist, die Gesundheitsdaten dieser Person zu verwalten.</div></div>
+    <button class="btn primary" style="margin-bottom:10px" onclick="closeModal('addProfileModal')"><svg class="icn"><use href="#i-check"/></svg> Profil anlegen</button>
+    <button class="btn ghost" onclick="closeModal('addProfileModal')">Abbrechen</button>
+  </div>
+</div>
+  </div>
+
+<script>
+const LOGO = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAABkCAYAAAC4or3HAAAl2UlEQVR42u2deXhdVbn/v+9aezpT5iZN05mWDoECLQh41bSCgl7vo+BNRK4TKq0yCAIKZTo5QIEyKAoULSCTCib8QL14gasIcUKQMJWGqVNo2qRJM595773e3x/nnPQ0tLQMeqFdn+dJe56z9157nbX3d6/3ffe71gI0Go1Go9FoNBqNRqPRaDQajUaj0Wg0Go1Go9FoNBqNRqPRaDQajUaj0Wg0Go1Go9FoNBrN+xXSTbBPXhPWzbh/IHUTvF9olEAjAW3vgfiiIndtO7WQ9dNe8y+6DgWxGfkHK7+LcrK7KVujBaz5Z4jXmTT3JLLDX4WUC8Ec2WEIM4gInP8MIhCIGYrABFC+AGYCiEGUJebn2Us/kHrjxZsB+FrEWsCafwpRAcRUoO6gayhc/j0iAbjp55nVS8zsQzEgiAAoKBDAgCDOXTci5GUNAFAsIEiRoDoyA8eCJPzk4H+nO5//PNCogFYGoHSbazTvDQIA4JRNC0xf5IfmLfadqQsefS8KDkya963QgR/h8LzF7Eypvz33Lb/HD+tGmfvT/F9i6Cb4P0aJkGLyJNgi5i4AwPHH20il/HdUXjxOqfb2nwSm1M8SoapzZbDi605d/fr0FlqZN6ffI1p97WNrAWuQVTnLlgClbABAJOLhkUfeqdgIaDBSm9vOC0w9pE4Ey04yIlUrAgccdQ7ACVYQREXdMSNnipPI61ARIJjBDCbK7UBFzpYigDJgXqPSiZZ0d8e9Ra6YFrIW8P5ITk/qPYtVtCmgUabeaD3Zqat/mOzAcSCaCIbMR76YGbmAGBV0Vzg7EcAqFzBDPnzGxfVQDKoRlvM5aQc+F7AOW5LqfO5bQBRATAtYs5/5wFZ4rjX1sGx43mK2J9ffk3Mv8/5lQ4Pxfo0zOnUH3xaa2+AHZx3JVqRu9k6/SaN74P2sBy50cLxDBK0+2grby0sRdq0dfu6bD9y1+RoHgkEj37Hu2J4AECraLQFGCAAHZFgYXjze05d7iABoBdCY/x/zGbOeMrHukYzyMq9JQLDyvaxyA/oaagHvG1JkptbW1rfsidauXcuxWGwnCzn3mpclAIXWVrKrDzyGAuHPkpSLSYh5gDByGs1pNfdph26Z81to5+/HZE5j9Rs7EmMlAZR7K5VWRKmgV3tfsrX19ILJnBNvnnUNOd+chJ1/chDgatNZC3jfgHI93d4EoN4kcmKVcCYc8GEKV1xLduDDBAHlpvuJ/UcZah2zSoJZCAgwFBiCBBQUBACFnLMqcpJUKn8GAQFFCgK5MJXKO92Ccl6vgsj7vSzM/xBWYL7nZU8AcDZyGV276d2JdcxKC3hfsoIJBL7izlvq7KB5qOd6OwmUhWD4gBWwRCbjbrro5FNfym2xQUIIKJ/JCh2HYMmXhRl0VCb+Z07Fr091v/y/AFL/ip8QnLqgnK3gPAJGsNfOt84F0gLeB2hpbRFNaPIN27iwcuLE09LJJIhEoVvOGatKwQkE0NfT99LSpUsX3nrrasUWEwABViDLmQow/NHe89Nda68ZK7yxUaK3910p5fgFC2RNRQX99amneN34d8xbAhJ1KZ83DAVyUWqWe/XI0uLVAt5XaGxsVACIAnTB9p6enyvXlz4LlqQIpgGhFLueB9Nx4GbdDatXr/aAvJGay4hUAEvE+y9Nb33lmh1ZTq0Kra3vOAGDmam5uZlisZj3FrVnrHvEF1MXKNp7URYcd33xtYA/+IGrvO+L8z/3zVEAT+6lD5y/+1mxkNJPxTszW1+5Oifed5+73NLSIonIB8BX/GLVcZFIaX08mXzqopNO/WtxnYFeKnIECibDnpTMKKRlw9Iq1gL+4JIXQuGGp4aGht1HoRcvRluuN8zf9FkAUEQk4WWeB+AiN5zw3YiXoo9HZdOSJu+c66JVE+sm32AFnP+qrJmA1IbO56PR6KKdu87qolD0HqTbAKANEJIUAA8gPUBCC/iD2/MCwDW/uv1+wzQ/4bquS2CRT2EaGytEIGIBsGLfNE3zU/fe9uf2VzafcP9ll2VNywLyvrIgZN5KPlGOCjwB0by42afi97rF+0SjInZZTMWWxLzYz248LlgSvikSiczKZNLYvGHjLwa2D33/muZm3q1ZnKsvTwPQuas98u+m2UdYSNPwpQvTZOHq20EL+APa+2Llvbc+Koh6iMgHQxARETFDEDMzgRUJSGYBJmZBAmt6AcXMyGaJbd5JQLs1R2MUUwBUDDG0tLTIpqamnXzj6ONRI7Yk5jU2NlqLPv+JmGlZ3wuFIzIxMtyTSqbOv/grp98NANeeef64knvzwgUD7IMIfpFF0djSIuZPmEDAE+i+t5uOPfZ0eep5zY/BT00hdmcGAoFs/5COaGn2LwQAWJHIbGf6onRo3mJ2pi54IBdTetMwPQJAK3/5k8Nv/O3PT15+64qavAUgmJnyfwIAlt96zYJrW3/2t1sebeWbfncvr/zVbb+96KZrpxV84oLVMC6IJQEgPGPhz8IHHcvB6Yd1Tp48ORCNRt/WAz4ajRq7Ll/zT+tAdBO8e1paWuTaCRMIAGJLlnhvo+25vLy8NF0641URiNSo1MhzqU3PLSzuiZmZCITlP/5RVUVtqKuiptoa6uvfnEqmL774K9++u7jAK++55TQ7GLgqUlZaMjo4PJpOp6IXfenbPyyIa/eR6AYDaPPC0w65T0lriuOPnjvQ+crfAWDR0qXm5xcvWigNeZSAmON5Xg2DJRg+CfQSxFp4/Ez7b3//bGtra7bQHuOtA40W8PuaaDQqYrGYWnHPqo86odDx6USKiIhyeVKi4DOzYRvEnmpPvbrlgY6ODmptbfUD0w59RARKPqmyqYza3nNQZmTzxnyxqlA2mgHzF5OOs23rR5HSktnZTAbZVOqBwb7Bsw0DqXB52epgJHKCEALxkdEn4wNDZ8SWnfNslFmguRmxWGyPwaaKibPmnzln3WuxNninX3lB5ZQDZp9mSPFFKeQ807YghIBlG2OxrmzWhed68FwPSvmvKtdvGdi27carzrqoT4tY+8AfKOrr6wkADCmagsHgGVAMErk3RZR/ZcpKwXIspBKpZyqOrPhvdCDXI3qp21mFjhOm41Ck5CyM4DtYtMhEe7sCkBNfDATg4QuuuurvPFNdYdrmaaVVlSf6zEcIIFsxYcIBw4NDXjqVvvrR1b+MtbW1edHHo0aMaG8tAgxuW98R6wEuvu2HnyuvKL/BCQanuekMXDfrSyX8bMajjhe7kEymYEiJ6TMncWl5CXmeJ03LnBMIBi8xLPPrl91943lNTU33aRHrHvgDyZV33Vi5q+9HAJQAuHDDmYOIFUbxRwmIkTNlwV9kqOwodjMZf6jn+Ex/5xPAIhNod4tN9YIgYnff/B/BUOiaktLIXAJhZGh4TSo5evYlX/nOH4kIl156qdiLXrfwvldFmUWMSF12x01fK60su0P5Cp7vZaEgbMcUXW9sw29aHqOJk6q4ZlIVJUZTeK1jIx/5bwfTUR87DMlUWgmQL6W0LMdGf9/28y796hnXRzkq8sE3jRbwPhvMUlbltLkiMuHv0gmVqmx8G412H5/s2/p8vif2in3i1tZW0dTU5J8ZjZbUzZ/8NUlSvfDUH+/4+fU/T+Qj0T72nCIlik30WCymlt9y7fzK6qrnBQnp+75PJCSYYdsGVlx6K338k0fi2E8fzfGRBFm2hZ4tvXzdirvo9O+ehLqpE5FJZ5kISkjJ0jDMgd7Bhtg3z/hTY0uLbNU9sTahPyjsKRJLO6bBKPi5Mtvf+YoNnKAEPSjscI2iukeDVvhryfb2h4sCTYX3v36+Nx4B8ONCuY0tLTK2pMnbs3AbBNDmVQAlYsbcjzU3Nz8ci8UQjkS+HQgGzWQ8niXKDV9kMIgEQuEARkcSYF9BSAEhCclUFiCCkAIqP56RQEIp37MNmy3HOB/An8aGE2t0D7zv0iiBVj9YdcAiLin7hbAjc9jLMLnJq4zBTdcNDw8P5nZrlDk1tCpmRvMTzRIAYoubfewmuSN3nRt3TBQAIDBxxhEUrrrdZNU9ur79OAXgql/+9I+hSHhxJp31KDeggZRiDoQc+K6Hu1b/hrKej8lTJ2J0NIHuN7bxCU0fp7kHHYCBgWGYhsHMDCawaZgylUy9vvzB38/L53Lrye90D7wv0+oDjTK5vbUd20uPdqZOXyGswDIEyi90pX1yIJK6zhzpvHektXVgTJVNTRKtvcgtxxKjcYIlNPQS2qo5V3ZOuFbltLkiVPYdsoPfJtOBl+h/pCAtAm0XQjIRMxjwFSMQsNHfN4i2PzyD8vII/FwCNIQQVDelGu1Pd4CEwMzZU5BMpEGCci+mhVDMnERrq9Li/eeh5/V9X9GRn1Ink/KGt/1OSusxSFEjDPtD5IQ/rZySU2RJzRQjUJ704tv70NGRBTpVXhzFAmGgg9HZqYAOLkd5KU2ZeZxVNXWFCJbeTE7kCPaymzgxeEFy80s3XBqNoq2tTX30M59UwVDoC27W9RgsLdukgd5BuukH99HcudNxzL8fTYcdMQ/z6mfQgkNnY85BM6F8H/fd/QhVVJRg8tQaZDMuAXADoZA5Ojx8zxO/fvj30cejRttdbTqQpU3o/em6NIpCr+lMnNtAdugUSHmisIMRsIKfTW0TUI+xm/kz++6L7Ke3ZlKDI2AmO1heQiIyiaQ4hEzrGCZxrLCDJWAFdjNr2E3emnpjy93A4HDhhPloMS6/e9UDVROrPzs8MJQpLQsZP7mhhRLxFC5ZsQzbtg3kV3HJ+/gMnlhbid/9uo1+95u/YMX1ZyjX9d1AKOjERxLrhrb3HnXVGcsH8n6/7oG1gPc7RH66VgUAoVBNtV9atYQs5zMk5MdhmJNysSYGKw/K9xQRQMIQJHMJF+y7YN/vgJ99WGXSv0l3v/xXjI10yvndxYG3Zc3NgekH1t4RKStpIhCeefJFLxR01Oz5M8l1XVGYiBbEYGaWQvLocBwda9bz4UcfZIZKIoiPjLzQ2z3w+evO+v76QoRbX0ot4P3b1WlsxLiB/XaoZuZs3wrXk5SHMNNsIUQtSBDA3azU61L5z1Jy+IXR7Rtf27m4XER7F37pmK96xd03f8W07PNKyiMHS2kglUhBKQVf+flprHOLrkkpYNk2bMfCUP9gbzabvfXZvzx2deuq1rgWrxawZlemdSPwtmfpaGgw8gEttYeAEjFzweQ1LvnZDUuCduDTUooPkRAzGChhZosIDFAczNt85a/JJLOPZOIjD1111kV9wI53y/qSaQHvx+ZzISC1S8Hls6gaBBoAVFczWufn9mvsIPT2Um7sbpsCwETEzHvvhu4qDfJ7t62MlBolJW4yZXuGzwbTaGzZeYMomoUzf9yeHhLv3Q1MY1Py6jtGoxmvj5aWFhl9/K2HCba0tEg9lFD3wP+KHo3yAZz865rC1DfVvJdzUOWjw4U5pN7yOFHUvmo3/qYYtz3/3SJhTRyezYIsB4nNo1u3DhUdt9e9W8GMvfT2H91SVTPhI/29/b+Pff3Mcwp5z3vbcNFoVNTX19MfBgfFovx35eXlqrGxURVnlUWj0bGphHZrPjNTFM2E5l3uQ9FolOrr62nt2rW5tmuGilFsJyukYB1ceMs1J9RMmnTZQN/2NbFvnn3y+CWTNfvdg4t3N5mbyC3GvdtbXGDP6wLRLszj3e7rTF+0JTjnI2xVTG18pz+yMMj/irtX/fHuvz3MK35+y0MFAeytcKP5Mna5nVkUi3bcud9W57CnOhVvL0w0cOnq60+9488P8ZW/+OmLBXN6f2O/ycQyy+oOYTMc8vpe7QAwZNbOXSjN4DxmDgsDW/2Rgdez/fTKbnpSBcSAcG2VXVFzqDTlJDBJ33W3GJmRFxK9sW1FIuX8+RaIUFmln07Gvf6NLyA3e53MLzTkAwgaNbMPYjZK/PToJox0rUPFrBLDMOolsQ2SBiCYzUC9M+mgLuSFJLz4+mRfZw/eVnYTp9KplFKM9NvpdXPDGGM475roxNLa6gW2aU70GcLPet3J/oEXY0TdhX2bm5v5wlXXHlxaXeb3b9gySERbd6pjXtDnXndeMFxZN0e5QvZvHXx5VSwWj0ajouBvr7jnlvkgmiuEUcbKS3i+eu2+hx5f29TUlB1fRyWEm06lFCtOAftnqte+LmAaWwIkXNFqBktnwzDuN+zAdBLicMUqQYBNpmPIcgdOqOJhkRr4erKvs1iQyi6ZPEuU16xgw2wiMJh5AACEaVfAqYUTrHhQjfYvz/ZvejX/blWxIIcM66fWhKrZRrj0sXTnupOA+HagFXDKpzqTZrVIK3ikGx94QqZ4aRZAwPTnshN5jIThkhAhKI+NcOn3wXwOQD6AgJ/MngXgp0CDBNr2bqxvbp4uIYj3avXA/JSz6txrV8yfMKX6CtM0T2Aw3Ew2RSAOhIPBYEkIK1tue7C3e9vFsbMu6ojFYnTp6h+cEA5Gmnla3daLbr78qCtOu7irublZxGIx1ZIfQVVyx4131Eye1Ni3teeFUDD5UWYWRKQuXX3DN8JlkfOdYGB2ciTuM/y0EMIpKYnIU5qO74kf/28/jH3j7OuYmZetXpbran0IAgkam0F//5Pw/rIcJAkSLhEpIxD+T+Vnn/JTQ/MyG5+pSW98ptKP938CvrdJhMs/5dtltwIAGhokALaqZhxIVbV/ISfYxNlULLX+9dLUhqcr838Blc2cJkz7sxSpeswpmzgt/5pGeANdTwdHOw/nzOh9MlR+TGDmvCftksmzApUzjgjUzXlG2qEjVXLg6mzXmiXZ0S2vA0BqW+B5I5uYykPrDlLK20bSFCox+F0z2z1dJNJzZGpocobiuSVI91a8ABRyy/0qtecbPMpRQUS48MaVh9fOnPQXJ+CckEmmz+17fVvZ8pOXBS84eWmod3tPWSoeP9s0jM9OrKttW37zNQsA8GVLz7lsqH/giaqa6kl2qOxGIuL65nqKRqNGU1OTv3zVtSdVVFc1xoeHE/GR0S9fe/61o0SkLr3tR1fVTp98G4hocPvgxy84eamx/ORl4QtOXmqM9PUfqny1oW76tJWxu276ARFxbfmxOQHL3COWaf91fPcbE5oBRcIQnB68J7v1pTOKO+nM1pf/YFTP+rFpBa6FNI4CUIY//WkQAMgORaUTrvETI2vYV89a06YdKzDTAgDF7PledpMkPGWEK452/cy5GOr5DhoaCG1tcmBgYAQDA190phz0AgVKmsWESX8GCQdCZtVIb1NqS0drfj3BfHCtIxvvxnYAjlOaX65B+SMjXV0DQNc7f3qNpTHutY/IwdLIinBJafn2np6/ptPZV0K1wWMuu/MmIzdjNXnprP+arxL/mDFn1pHpZOZqAJ9mZpx9Q/MppmX9o7Km+rMXr77+K03UdHc0GjXOXLF8Qml52XVSSgwODn9v5ZkXrAFAF9x05QHBUPC8TDLtpeLJ3yn2AtE7b2oCAFKKXEKcU+lHPc/7cGlZ2VnfvenKm2JNTesAQCiVm02TibSA93H9ji3KSaozZ+aulUCHCyw0gJkK/jNZyi3vyQDMsTUTIGaz73sQIgjTOg1AAAQfUASApGWRYmzlxNCvBXhTrnNcrHLvX3MzaqQ3v3S1Pe3QT5nhio+BGV586OH0lo77c2dYLAF44wJdlkB+sUEmIzeoPyyxKO6jfaYqpD/utYBz8+IBYBl9PGp0p7pl9PHom2767tcmUTOWejHEhJBiWiad9kAiYjvmd6AQZIJPIGawtAxBkOjasqlzm+tlOwBg9erVxo++G9t08eoffDsUCbdGSsuuP/emy9tiZ1zS2Xz7j26omlhd1925+dcrTv3uLdGWFivW1JRlYU41bctIp1IZwzTmKhaH5ttekRAkc8MakwO92x9gVpb0fS6sKkFCcKHVotGogcWLEVuyZG8mM9AC/gCiiKEEkZETQEM+wBLODbfjGcS59Yny3yXyR3kPkBBHAJzOdrb/O/Zq6dCYyrkn7a5t10ynSVNaZSByuEoMrmLmiAxXfNmZecQLamjzSdmBto5xAanc9FmAKZk9cDaL9nYXgIt2ALl/3m4kQIGhWHEqtiTmFT0w3sTqZcsAgN1M5qFwaeTcZDw+uPyL3zp+b06zbNkyNzcjyDn3N9/+459NmTX96+lU+sqLf3rdr6omVp880Lt9a9/Q8LeYmZpaW31mpjOuWv5CJBLeVlk9oWbrlq6HLv/62Tft6TyhBZ4BwAMJA0Q+MdxYLOZhpzWXtYD3KR+YiUKQhmDA3l2gWhiG4CyFgfhYjCDb3XE9STlfhsu/7Mz80BD5ahWr7LPKdUeFKcPStA9RZJ6i3Mzfw4k3vtrf35/IC9IP1NWfSIGSu8i0wjzad2Fy80tXAUBgysGbZKj8ElExfQ0FK87OdNWvyr9P5twrqViSlP8yGdZiI1Kz3LDLfEVqVBrmkUp5G9JvvPQL7HinvTc/PySkENKQh8fuvOli+CxIwGciYl8RE1gSsQ/I9HDizpVnX/DGts5Xm6Vtzaiqrj5x5X23Dnuud4uv1NO+76ZJiFLLsI40betLmVTqMXfQOxUDA/FYLMbNi5t9cLPYuvKCc+yg89HK6sqTU4nkyYoZQ8NDZ/z47Iu2fWTSbNna1OQ3R6Pi5tjV/ResuuZLtmPfWTdlyo1X33drk5t1f+V5aqOAL2HIGaY0T7Bs67Ch7QNnXL7snF80tzYLAPA9Ly6IpDCNhZfds+oSVv7ocN/Q//vBeZdsBjNhPxgBtb8EsUC+9wxnk+2keH3um/x6QPn/FfNWP5Nsh+f+raiHYgBupmvNV/zhbccTq/8hKU8m07ldOKEHyAysZjK+AOU/Aj/74/7+/hTQSACULJ22RBnOciJ6VY30NCU3v3QVGhoMoFGmNq+51B/t+TKYn4N0lppVz3wVY4kcsVx8NdH/X3584HYSopyswM+FGbgfhn26IOOj+QfvHm/O5sKPUOrVkYGhFw1pJG3LWuoEnW/Yjr3Use1TA0Hnm8GAc6odcL4ZCNjfZOFNBIBVzTcnLv6vb3+++43N/wHgMcM0T7FM85eOE3zAtpzbyZCf9zz3Ed9TP+t2nFRzcy7Zgoi4o7WVVl+wcnikr++UZDzeLqV4YWh7/9VXLj33wZ0m5ovFVDQaFVef9v0/dDz73GED23q/J4QImpZ5pW2bD1i2c79t2ZcbpizxfO9GycazBALWwmNmSsS7Hux9Y+t1QtAm2zS/axrm92CJEABEm5v3C79Yp77tfTvtEExtbRBJy8JwZwpAZteHzLKBdUXboqIwLHDnz7vad9y5K2ZFgAFgYGDkX2q17BjUAAA4/+qrS6mExci2tLsqFou/ddThzT3gzisiFrXMuIEPjdFG6wDngFDKsfn5oSfibbG9irgLvMvVHDXvexHuKTuI32JZzUa5iyVPcjQ05AJNu7RooiK/jd5UHphyvfIuH6a06/NF/6VWU0tLi2yMRq1dtUtLS4uM8u7rE41GRSEja3cZW8Xijj4eNXa1XzQaFbvJx6a9zSrTPbBmd+3G76KMPfmxRbnXbYWc67dzPpE36bGbYYSExsYdgml90z40/jcWRFTUkxZPmLeb+uWSW4p6ybf+DQxi7LTiKe/l9dCJ0Jp3JmZn8vwfBurqT9xxw+ZvqtraYGjqQasidfOO3FXcwZ5Uf1pwysHXRSbO/vS47eJdxizes4dzycwF3yo5YOHKCXMOPyUa3akO77aOmneJnpXyXZOPPUnrC1D+CIAH8qOVcr1Bd3eWJ4WfMom3FIurdOrUMk+Fj2fLuZk870xhyeL85kLP7ASnHbxEQDjkZtaObn3lNexdDjQB4PC0g+YSmQcS+1kb3vN9nR07nSM4bX6NKZ35AEoVcc/o+ueeLBZ/6dSDyzyljvPJ+rEBdbrn+a/k39SMjbIK1x5YRU7oaPZ9y3S9fwx2d7wxro7CLJ8yzwg5Q4YVOsQgY83g+mc2Q89U+Z6gn5bvXTc8wKA0dsz0WbjJhSLzEtdwphS3edb3Q8pXhwEYIPbdrO+buRs6Z46GJs89KDTjsCcY4mgov8Y3nJ8EZhx6OcZeNe2OBgMAB6ce/H0W5kOsvGoFdZgvxMHjTHeWQhyrlH+M8r0ZDNkcmrnwtpwBkauDVINBkJoPoN91XbiZtJl7sDRIAAhNnXcMgqUPgWkuS6p1HeeByMzDTimqBxoAYZVWPSLNknsg5EfAXKbdNy3g92NHHCJWcewi0YOFGWRBRlGXLVJbtnR56fjd7PuIb35pdWrL608ByM3lDDBZoW9B2gf6qeH2rOdtU8p9hJhn5a7ZW01Vk5++1Uv/LynvZ0xUCrKsLBn5Y3O9XmXlnIjvGzNBYr2nvHVSiGcB+kTeF/YBiIGuri0S7l2+7/vJN9bcGu96+U+5OuZ/h7DOA2B52cSrKp3ZwsyP+ooXAGA05l7PVQMMIQRB/XB0XfuFgxva1xR6b33TaAG/Dyi8b1QdhuV8pvyAhccVbt4dvTPbUqk3Ldot7UCFEBQM1x5YOXYt2toUAFLKvxW+u94MVS40DCtiCArIbPzG/I2/x+tGUk5QLHxJ6GLmGcxiGRYtKvjm7AZkjTCM7wvDrJCQxJ5bm0sAw84TxLNVKQhBoLRsRx0X5/YT6jqwyprBkvlGMBQRkpTJ6u78Q2CsEOW5MptMxvMRd+22vdcBGM27bkOura0NpsNTlsDPDA1ueOGvRT6eCNTMPtwJ+a8ObtgwXNTmXFk5J5J0/PrUlnXPYOf0xrEyE8GJH1OuF2bQgGWY7YMb2of34D8SAK6YNaskkw0eTlJUgKk3vum5v+TFP3b+wJTDJpmW8RGo1CCTv0n4CA93vvx8kR/OE+bPD6eH1UGjW175xzjrggBw6bRpZUpWfVhIYft+pi8w6j3f19cRL/a1AxMPPNxKZV4fHu4c0r6vRltH75+Ht7bgtAn9vmkHMT74lP8sx7WTKNpWvJ1yCRs7JWbkjxtL5Bj/J4teORXKKt4ugAYD8+dbReXurh6i6H85Vt6OY8dvz5WxaJGZTzSR4+peqI8cF5gb3x6537BokZn/LePbivLl0rh2Lq7n+PYf/yqNtLWo0W7KXtC4u2wz3W765nqf3rEy+PhTh1i27U8qPfTlgeRLtT2Vwa12V9/koDD8rPJmmYbcPrRl44sAUFozdQaRNdWuDj4z0jVQZhhyioDVO1xldpX0pw714SUS2zavLS2dVuZamJ7s63y+pGbGh0zPermk1gzGt42SlKaf4mxYSHNiiek91zvqVQUQGEnKzALLsbv9rBpVUDNMU/Z70otTGvMMiaHhrZ3PFXzI8MRZ80lw2aRIzZrNm18PKTs4wwwEXsuMjlY4Qaucpb2eR4bJC5gHRoK0gZkpq8IZzibmKB+2sANrRre+0l9aM216hlHrCNpKQcEVgQoeTabLU7a3xesdne0E7fhgifMaOjqyoeoZNb7iObYwu4Z7X++M1Ew/XLFI2p7oTFHmwPnTq1/o2NhTkxrY0gXACFRPO3z+lKr2Dd3dEwfLyrZFticWCcNM15VZazdvTyxUBKdE2C9tT8anOCHTObC26pmOjT01jm2Lwe4Nb5RMmDxrpK9rXWnp1HLPTluJ3t5tWrI7s09EBAtJ8j/97f1zYdIBvud6ECwAA0r5uYeUUopMYXpp7jjrxC+ub2hoMNra2rzg43/9lDTNWU4gkBlwXyl1lXdkXdL/dVwaX4ODaziO/1QkfgAAJRMmz2LGSWQaf870Z74RLC8d9FzvWOWq9pKhTI90rApbBkpF1cws29RoMH24tHrqd4xQ8CQ3nRrKuIGgCjl/Y58DQCAA8MIkGySt9CG+5JdN3zzLkuYP05SuNqX5KSiOO07NJZlU36dgiF8VmZW+45hf9nxU9iT7/wbHUZZjHRYJetcPucaXYJhTSPEfPNuIm5b5qUBJ8NrhwfQJTkA+OJpFDQmeFebQ06MAhGF+wSYqk5LuYpdOHHAHf5PNqE9YyuxQttOkFDLBRKI5CfQYlvwMef4wyD9qwvS5z2d97xTHkA8khxKAYZy+vi+x0QgEhgH8COGJ5cR05oa+0RdYlsjykWyncpwMe35Nz2h2giK4vucdaYZKXjDMzNkS5rqN2xNsWPaXlBSRqqlzL0gk4qdg1qzLvJHM4YTQNKDhzmnTNhmhUEh1dHSMTXJ384P3flgJVDDlg2xePtZmSBgAMp4PL6T+9L3jvpLY14Jo+4SAC3m5W9vXvFZfX//6zosaFLlTGaCxsVGdhS+ira3NB0DSwpOGMDzXzVQow9iYjqfSSmGR7Zj39W54dThcNfm+kW98aQNiMYwEZVdpmv8G5UWU4P+x2XZYqNeU8Mmx1EY3yws94ognMpUWwn8zTPOBDKtJkZBzh0qlhrPp7L8ZDl5EwguzMl2flOeRMSIFnhSMfmEZv2NfJS3bWOspscnPpMpG1j09WlIz+f6IQsfwjh8FMsTjyvMrvIx6xXRsMhzTUwpCyfRDhvKV63pKWiIlpSzNDGdYMv5SwoHtce75u5CB17q725M5E4yekEBXf+drW0I1B/zGJDpMCqvNkW6v5/urYcigifxsltJql17qAAj/aTsoXsyOYLISxnbLsYaTvne5Ic06CWECQGml7ZJHK8HSZ+XO9Xz8yTZxtG/gDZ/cp0lkDT+tek8548ThH666896hrev+t3zynHpTynsgJXmemiAt+Y+SBD4GxgZyrLryyT3zOFC1Pe65DoCNBTH2fu6Vv9e31hOA3NrneZe90dvhpjcdN7bKhI6AaxdDo9E36PupDYpHsxS3SfEIGoyLjPK4NuS3+Fx8rNpF+xeXNb7cXdUB46K9xfnTu6pfcRnjz1nIzuLdlImic++qrXY1ekm9RR3HtwmPq9vuyqddHKfRaDQajUaj0Wg0Go1Go9FoNBqNRqPRaDQajUaj0Wg0Go1Go9FoNBqNRqPRaDQajUaj0Wg0Go1Go9FoNBqNRqPRaDQajead8v8BkHMrVqDUIPgAAAAASUVORK5CYII=";
+
+const SCREEN_TITLES = {
+  'home':'Übersicht', 'health':'Gesundheit', 'upload':'Dokument hinzufügen',
+  'ocr':'OCR & Metadaten', 'docs':'Dokumente',
+  'cat-impf':'Kategorie · Impfpass', 'cat-blut':'Kategorie · Blutgruppe',
+  'cat-aller':'Kategorie · Allergien', 'cat-medi':'Kategorie · Medikamente',
+  'profile':'Profil & Account'
+};
+
+const PROFILES = {
+  SM:{name:"Simone Müller",initials:"SM",greeting:"Guten Morgen",docs:5,
+      reminder:{type:"warn",title:"Auffrischung fällig: MMR",sub:"In 14 Tagen · Termin beim Hausarzt empfohlen"},
+      recent:[
+        {icon:"i-droplet",t:"Blutgruppen-Ausweis",s:"Typ A+ · Jan 2024",pill:{type:"neutral",text:"Dauerhaft"}},
+        {icon:"i-syringe",t:"Impfpass – COVID-19 Booster",s:"Hausarztpraxis · 15.09.2023",pill:{type:"ok",text:"Aktuell"}},
+        {icon:"i-file",t:"Reiseimpfungen Südostasien",s:"Typhus, Hepatitis A · Okt 2024",pill:null}
+      ]},
+  LM:{name:"Lena Müller",initials:"LM",greeting:"Hallo",docs:3,
+      reminder:{type:"warn",title:"Auffrischung fällig: MMR",sub:"In 14 Tagen · Termin beim Kinderarzt empfohlen"},
+      recent:[
+        {icon:"i-syringe",t:"Impfpass – MMR",s:"Kinderarzt · 22.05.2025",pill:{type:"ok",text:"Neu"}},
+        {icon:"i-file",t:"Zahnarzt-Kontrolle",s:"Prophylaxe · Feb 2025",pill:null},
+        {icon:"i-file",t:"U-Heft Eintrag U9",s:"Kinderarzt · Mai 2025",pill:null}
+      ]},
+  TM:{name:"Tom Müller",initials:"TM",greeting:"Hallo",docs:4,
+      reminder:{type:"info",title:"Impfschutz vollständig",sub:"Nächste Auffrischung erst 2030"},
+      recent:[
+        {icon:"i-shield",t:"Allergie-Ausweis – Erdnüsse",s:"Allergologe · 12.02.2024",pill:{type:"danger",text:"Wichtig"}},
+        {icon:"i-syringe",t:"Impfpass – Tetanus",s:"Hausarzt · 18.04.2024",pill:{type:"ok",text:"Aktuell"}},
+        {icon:"i-file",t:"Zahnarztbefund",s:"Prophylaxe · 03.04.2025",pill:null}
+      ]}
+};
+
+const HEALTH = {
+  SM:{name:"Simone Müller",dob:"14.05.1987",age:"38 J.",vers:"A123456789",
+      blood:"A+",
+      allergies:[{n:"Nüsse (Haselnuss)",sev:"severe",icon:"i-warn"},{n:"Laktose",sev:"mild",icon:"i-warn"},{n:"Pollen (Gräser)",sev:"mild",icon:"i-leaf"}],
+      meds:[{n:"Vitamin D3",d:"1.000 IE · täglich"}],
+      vacc:[{n:"COVID-19 Booster",d:"2023"},{n:"Tetanus",d:"2020"},{n:"Masern (MMR)",d:"2018"},{n:"Hepatitis A + B",d:"2016"},{n:"MMR-Auffrischung",d:"fällig 06.2025",due:true}],
+      chronic:"Keine erfasst",
+      emergency:{n:"Anna Weber (Schwester)",p:"+49 151 2345 6789"},
+      status:"Impfschutz weitgehend aktuell · 1 Auffrischung fällig",updated:"22.05.2025"},
+  LM:{name:"Lena Müller",dob:"14.03.2019",age:"6 J.",vers:"A987654321",
+      blood:"0+",allergies:[],meds:[],
+      vacc:[{n:"Masern (MMR)",d:"2025"},{n:"Sechsfachimpfung",d:"2020"},{n:"MMR-Auffrischung",d:"fällig 06.2025",due:true}],
+      chronic:"Keine erfasst",
+      emergency:{n:"Simone Müller (Mutter)",p:"+49 151 2345 6789"},
+      status:"1 Auffrischung in 14 Tagen fällig",updated:"22.05.2025"},
+  TM:{name:"Tom Müller",dob:"09.08.2015",age:"10 J.",vers:"A456789123",
+      blood:"A+",
+      allergies:[{n:"Erdnüsse",sev:"severe",icon:"i-warn"}],meds:[],
+      vacc:[{n:"Tetanus",d:"2024"},{n:"Masern (MMR)",d:"2021"},{n:"Sechsfachimpfung",d:"2016"}],
+      chronic:"Keine erfasst",
+      emergency:{n:"Simone Müller (Mutter)",p:"+49 151 2345 6789"},
+      status:"Impfschutz vollständig",updated:"18.04.2025"}
+};
+
+const DOCS = [
+  {p:'SM',c:'impf',icon:'i-syringe',t:'Impfpass – Simone',s:'6 Einträge · zuletzt Mai 2025',pill:{type:'ok',text:'Aktuell'}},
+  {p:'SM',c:'blut',icon:'i-droplet',t:'Blutgruppe',s:'Typ A+ · Rhesus positiv',pill:{type:'neutral',text:'Dauerhaft'}},
+  {p:'SM',c:'aller',icon:'i-shield',t:'Allergien',s:'3 Einträge · Nüsse, Laktose, Pollen',pill:{type:'danger',text:'Wichtig'}},
+  {p:'SM',c:'medi',icon:'i-pill',t:'Medikamente',s:'Vitamin D3 · 1.000 IE täglich',pill:null},
+  {p:'SM',c:'bef',icon:'i-file',t:'Reiseimpfungen Südostasien',s:'Typhus, Hepatitis A · Okt 2024',pill:null},
+  {p:'LM',c:'impf',icon:'i-syringe',t:'Impfpass – Lena',s:'Neu hinzugefügt · Mai 2025',pill:{type:'ok',text:'Neu'}},
+  {p:'LM',c:'blut',icon:'i-droplet',t:'Blutgruppe',s:'Typ 0+ · Rhesus positiv',pill:{type:'neutral',text:'Dauerhaft'}},
+  {p:'LM',c:'bef',icon:'i-file',t:'Zahnarzt-Kontrolle',s:'Prophylaxe · Feb 2025',pill:null},
+  {p:'TM',c:'impf',icon:'i-syringe',t:'Impfpass – Tom',s:'Vollständig · Apr 2025',pill:{type:'ok',text:'Aktuell'}},
+  {p:'TM',c:'blut',icon:'i-droplet',t:'Blutgruppe',s:'Typ A+ · Rhesus positiv',pill:{type:'neutral',text:'Dauerhaft'}},
+  {p:'TM',c:'aller',icon:'i-shield',t:'Allergien',s:'1 Eintrag · Erdnüsse',pill:{type:'danger',text:'Schwer'}},
+  {p:'TM',c:'bef',icon:'i-file',t:'Zahnarztbefund',s:'Prophylaxe · 03.04.2025',pill:null}
+];
+const PEOPLE_NAMES = {SM:'Simone Müller', LM:'Lena Müller', TM:'Tom Müller'};
+
+let currentOv = 'SM';
+let currentHealth = 'SM';
+let docPerson = 'all', docCat = 'all';
+
+function goScreen(sid){
+  const target = document.getElementById('screen-' + sid);
+  if(!target) return;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  target.classList.add('active');
+  document.querySelectorAll('.menu-item').forEach(m => {
+    m.classList.toggle('active', m.dataset.screen === sid);
+  });
+  const crumb = document.getElementById('crumb');
+  if(crumb) crumb.innerHTML = '<em>Bildschirm:</em> ' + (SCREEN_TITLES[sid] || sid);
+  if(sid === 'home') renderOverview(currentOv);
+  if(sid === 'health') renderHealth(currentHealth);
+  if(sid === 'docs') renderDocs();
+  if(sid === 'ocr') prepareOcrForm();
+  if(sid === 'cat-impf') renderCatUserDocs('impf');
+  if(sid === 'cat-blut') renderCatUserDocs('blut');
+  if(sid === 'cat-aller') renderCatUserDocs('aller');
+  if(sid === 'cat-medi') renderCatUserDocs('medi');
+  const content = target.querySelector('.content');
+  if(content) content.scrollTop = 0;
+}
+
+function selectOv(el, key){
+  el.closest('.switcher').querySelectorAll('.pchip').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  currentOv = key;
+  renderOverview(key);
+}
+function selectHealth(el, key){
+  el.closest('.switcher').querySelectorAll('.pchip').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  currentHealth = key;
+  renderHealth(key);
+}
+
+function renderOverview(key){
+  const d = PROFILES[key];
+  if(!d) return;
+  document.getElementById('ovAvatar').textContent = d.initials;
+  document.getElementById('ovName').textContent = d.name;
+  document.getElementById('ovHi').textContent = d.greeting;
+  document.getElementById('ovDocCount').textContent = d.docs;
+  const b = document.getElementById('ovBanner');
+  if(d.reminder){
+    const icon = d.reminder.type === 'warn' ? 'i-clock' : 'i-shield-check';
+    b.innerHTML = '<div class="banner ' + d.reminder.type + '"><svg class="icn lead"><use href="#' + icon + '"/></svg><div class="bt"><b>' + d.reminder.title + '</b>' + d.reminder.sub + '</div></div>';
+  } else b.innerHTML = '';
+  const list = d.recent.map(r => {
+    const pill = r.pill ? '<span class="pill ' + r.pill.type + '">' + (r.pill.type === 'ok' ? '<svg class="icn"><use href="#i-check"/></svg>' : '') + r.pill.text + '</span>' : '<span class="chev"><svg class="icn"><use href="#i-chev-right"/></svg></span>';
+    return '<button class="row"><div class="chip"><svg class="icn"><use href="#' + r.icon + '"/></svg></div><div class="meta"><div class="t">' + r.t + '</div><div class="s">' + r.s + '</div></div>' + pill + '</button>';
+  }).join('');
+  document.getElementById('ovDocs').innerHTML = list;
+}
+
+function calcAge(dobStr) {
+  const p = dobStr.split('.');
+  const dob = new Date(+p[2], +p[1] - 1, +p[0]);
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  if (today.getMonth() < dob.getMonth() || (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())) age--;
+  return age + ' J.';
+}
+
+function renderHealth(key){
+  const d = HEALTH[key];
+  if(!d) return;
+  document.getElementById('hAvatar').textContent = key;
+  document.getElementById('hName').textContent = d.name;
+  document.getElementById('hMeta').innerHTML = '<span>geb. ' + d.dob + ' · ' + calcAge(d.dob) + '</span><span>Vers.-Nr. ' + d.vers + '</span>';
+  document.getElementById('hStatusText').textContent = d.status;
+  document.getElementById('hFoot').innerHTML = '<svg class="icn"><use href="#i-clock"/></svg>Aktualisiert am ' + d.updated + ' · automatisch aus deinen Dokumenten';
+  const aller = d.allergies.length
+    ? '<div class="ak-chiplist">' + d.allergies.map(a => '<span class="ak-warnchip ' + (a.sev === 'severe' ? 'severe' : 'mild') + '"><svg class="icn"><use href="#' + a.icon + '"/></svg>' + a.n + '</span>').join('') + '</div>'
+    : '<div class="ak-empty">Keine erfasst</div>';
+  const meds = d.meds.length
+    ? d.meds.map(m => '<div class="ak-item"><span class="ak-n">' + m.n + '</span><span class="ak-d">' + m.d + '</span></div>').join('')
+    : '<div class="ak-empty">Keine Dauermedikation</div>';
+  const vacc = d.vacc.map(v => '<div class="ak-item"><span class="ak-n"' + (v.due ? ' style="color:var(--warn)"' : '') + '>' + v.n + '</span><span class="ak-d"' + (v.due ? ' style="color:var(--warn)"' : '') + '>' + v.d + '</span></div>').join('');
+  document.getElementById('healthBody').innerHTML =
+    '<div class="akblock"><div class="ak-bh"><div class="chip"><svg class="icn"><use href="#i-droplet"/></svg></div><span class="ak-bt">Blutgruppe</span><span class="ak-bv">' + d.blood + '</span></div></div>' +
+    '<div class="akblock"><div class="ak-bh"><div class="chip"><svg class="icn"><use href="#i-shield"/></svg></div><span class="ak-bt">Allergien</span></div><div class="akbody tight">' + aller + '</div></div>' +
+    '<div class="akblock"><div class="ak-bh"><div class="chip"><svg class="icn"><use href="#i-pill"/></svg></div><span class="ak-bt">Dauermedikation</span></div><div class="akbody ' + (d.meds.length ? '' : 'tight') + '">' + meds + '</div></div>' +
+    '<div class="akblock"><div class="ak-bh"><div class="chip"><svg class="icn"><use href="#i-syringe"/></svg></div><span class="ak-bt">Impfungen</span></div><div class="akbody">' + vacc + '</div></div>' +
+    '<div class="akblock"><div class="ak-bh"><div class="chip"><svg class="icn"><use href="#i-activity"/></svg></div><span class="ak-bt">Chronische Erkrankungen</span></div><div class="akbody tight"><div class="ak-empty">' + d.chronic + '</div></div></div>' +
+    '<div class="akblock"><div class="ak-bh"><div class="chip"><svg class="icn"><use href="#i-phone"/></svg></div><span class="ak-bt">Notfallkontakt</span></div><div class="akbody"><div class="ak-item"><span class="ak-n">' + d.emergency.n + '</span><span class="ak-d">' + d.emergency.p + '</span></div></div></div>';
+}
+
+function renderDocs(){
+  const list = DOCS.filter(d => (docPerson === 'all' || d.p === docPerson) && (docCat === 'all' || d.c === docCat));
+  const body = document.getElementById('libBody');
+  const no = document.getElementById('libNo');
+  if(!body) return;
+  if(list.length === 0){ body.innerHTML = ''; no.style.display = 'block'; return; }
+  no.style.display = 'none';
+  const byP = {};
+  list.forEach(d => { if(!byP[d.p]) byP[d.p] = []; byP[d.p].push(d); });
+  const order = docPerson === 'all' ? ['SM','LM','TM'] : [docPerson];
+  body.innerHTML = order.filter(k => byP[k]).map(k => {
+    const items = byP[k].map(d => {
+      const pill = d.pill ? '<span class="pill ' + d.pill.type + '">' + (d.pill.type === 'ok' ? '<svg class="icn"><use href="#i-check"/></svg>' : '') + d.pill.text + '</span>' : '<span class="chev"><svg class="icn"><use href="#i-chev-right"/></svg></span>';
+      // Make category rows clickable to their detail screens
+      const catMap = {impf:'cat-impf', blut:'cat-blut', aller:'cat-aller', medi:'cat-medi'};
+      const target = catMap[d.c];
+      const onclick = target ? ' onclick="goScreen(\'' + target + '\')"' : '';
+      return '<button class="row"' + onclick + '><div class="chip"><svg class="icn"><use href="#' + d.icon + '"/></svg></div><div class="meta"><div class="t">' + d.t + '</div><div class="s">' + d.s + '</div></div>' + pill + '</button>';
+    }).join('');
+    const header = docPerson === 'all' ? '<div class="phead"><div class="pav">' + k + '</div><div class="pn">' + PEOPLE_NAMES[k] + '</div></div>' : '';
+    return header + '<div class="pad stack" style="padding-bottom:14px">' + items + '</div>';
+  }).join('');
+}
+
+function setFilter(el, group, kind, val){
+  document.getElementById(group).querySelectorAll('.fpill').forEach(x => x.classList.remove('on'));
+  el.classList.add('on');
+  if(kind === 'person'){ docPerson = val; document.getElementById('docAvatar').textContent = val === 'all' ? 'SM' : val; }
+  else docCat = val;
+  renderDocs();
+}
+
+function prepareOcrForm() {
+  const personChip = document.querySelector('#upPerson .selchip.on');
+  const personKey = (personChip && personChip.dataset.key) ? personChip.dataset.key : 'SM';
+  const h = HEALTH[personKey];
+  if (!h) return;
+  const nameEl = document.getElementById('ocrName');
+  const dobEl  = document.getElementById('ocrDob');
+  if (nameEl) nameEl.value = h.name;
+  if (dobEl)  dobEl.value  = h.dob;
+}
+
+function saveDocument() {
+  // Person aus Upload-Screen lesen (über data-key — eindeutig, unabhängig von Textinhalt)
+  const personChip = document.querySelector('#upPerson .selchip.on');
+  const personKey = (personChip && personChip.dataset.key) ? personChip.dataset.key : 'SM';
+  const personFirst = {SM:'Simone', LM:'Lena', TM:'Tom'}[personKey] || personKey;
+
+  // Dokumenttyp aus Upload-Screen lesen (über data-type — unabhängig von SVG-Textinhalt)
+  const typeBtn = document.querySelector('#upType .typebtn.on');
+  const typeName = (typeBtn && typeBtn.dataset.type) ? typeBtn.dataset.type : 'Sonstiges';
+  const typeMap = {
+    'Impfpass':   {c:'impf', icon:'i-syringe'},
+    'Befund':     {c:'bef',  icon:'i-file'},
+    'Medikament': {c:'medi', icon:'i-pill'},
+    'Sonstiges':  {c:'bef',  icon:'i-file'}
+  };
+  const {c, icon} = typeMap[typeName] || typeMap['Sonstiges'];
+
+  // Formularfelder lesen
+  const name      = (document.getElementById('ocrName')     || {}).value || '';
+  const dob       = (document.getElementById('ocrDob')      || {}).value || '';
+  const kat       = (document.getElementById('ocrKat')      || {}).value || typeName;
+  const date      = (document.getElementById('ocrDate')     || {}).value || '';
+  const impfName  = (document.getElementById('ocrImpfName') || {}).value || '';
+  const note      = (document.getElementById('ocrNote')     || {}).value || '';
+
+  // Titel + Untertitel aufbauen — personFirst kommt immer aus dem Personenkey, nicht aus dem Formular
+  const title = kat + ' – ' + personFirst;
+  const detail = impfName || note || '';
+  const sub   = (detail ? detail + ' · ' : '') + date;
+
+  // DOCS-Array aktualisieren
+  DOCS.unshift({p:personKey, c, icon, t:title, s:sub, pill:null, _new:true});
+
+  // PROFILES: Zähler + Zuletzt hinzugefügt
+  if (PROFILES[personKey]) {
+    PROFILES[personKey].docs++;
+    PROFILES[personKey].recent.unshift({icon, t:title, s:sub, pill:null});
+    if (PROFILES[personKey].recent.length > 3) PROFILES[personKey].recent.pop();
+  }
+
+  // HEALTH: Gesundheitsdaten ergänzen
+  if (HEALTH[personKey]) {
+    if (c === 'impf') {
+      HEALTH[personKey].vacc.unshift({n: impfName || kat, d: date});
+    } else if (c === 'medi') {
+      HEALTH[personKey].meds.push({n: kat, d: note || date});
+    }
+  }
+
+  // currentOv + currentHealth auf gespeicherte Person setzen
+  currentOv = personKey;
+  currentHealth = personKey;
+
+  goScreen('docs');
+}
+
+function renderCatUserDocs(cat) {
+  const el = document.getElementById('userDocs-' + cat);
+  if (!el) return;
+  const entries = DOCS.filter(d => d.c === cat && d._new);
+  if (!entries.length) { el.innerHTML = ''; return; }
+  const rows = entries.map(d =>
+    '<button class="row"><div class="chip"><svg class="icn"><use href="#' + d.icon + '"/></svg></div>' +
+    '<div class="meta"><div class="t">' + d.t + '</div><div class="s">' + d.s + '</div></div>' +
+    '<span class="pill ok"><svg class="icn"><use href="#i-check"/></svg>Neu</span></button>'
+  ).join('');
+  el.innerHTML = '<div class="sec-head"><h2>Neu hinzugefügt</h2></div>' +
+                 '<div class="pad stack" style="padding-bottom:8px">' + rows + '</div>';
+}
+
+function setSelchip(el, group){
+  document.getElementById(group).querySelectorAll('.selchip, .typebtn').forEach(x => x.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function openModal(id){ const m = document.getElementById(id); if(m) m.classList.add('show'); }
+function closeModal(id){ const m = document.getElementById(id); if(m) m.classList.remove('show'); }
+function openAddProfile(){ openModal('addProfileModal'); }
+
+function showToast(id){
+  const t = document.getElementById(id);
+  if(!t) return;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+let ocrFiles = [];
+let ocrIndex = 0;
+
+function handleFileUpload(event) {
+  const files = Array.from(event.target.files);
+  if (!files.length) return;
+  ocrFiles = [];
+  ocrIndex = 0;
+  const imageFiles = files.filter(f => f.type.startsWith('image/'));
+  if (!imageFiles.length) { goScreen('ocr'); return; }
+  let loaded = 0;
+  imageFiles.forEach((file, i) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      ocrFiles[i] = e.target.result;
+      loaded++;
+      if (loaded === imageFiles.length) { buildOcrSwiper(); goScreen('ocr'); }
+    };
+    reader.readAsDataURL(file);
+  });
+  event.target.value = '';
+}
+
+function buildOcrSwiper() {
+  const swiper = document.getElementById('ocrSwiper');
+  const placeholder = document.getElementById('ocrPlaceholder');
+  const badge = document.getElementById('ocrTagBadge');
+  const counter = document.getElementById('ocrCounter');
+  const prevBtn = document.getElementById('ocrPrev');
+  const nextBtn = document.getElementById('ocrNext');
+  const fullBtn = document.getElementById('ocrFullBtn');
+
+  swiper.innerHTML = '';
+  ocrFiles.forEach(src => {
+    const slide = document.createElement('div');
+    slide.style.cssText = 'flex:0 0 100%;width:100%';
+    const img = document.createElement('img');
+    img.src = src;
+    img.style.cssText = 'width:100%;height:160px;object-fit:cover;display:block';
+    slide.appendChild(img);
+    swiper.appendChild(slide);
+  });
+
+  placeholder.style.display = 'none';
+  badge.style.display = 'flex';
+  fullBtn.style.display = 'block';
+
+  ocrIndex = 0;
+  updateSwiperPosition();
+}
+
+function ocrNav(dir) {
+  ocrIndex = Math.max(0, Math.min(ocrFiles.length - 1, ocrIndex + dir));
+  updateSwiperPosition();
+}
+
+function updateSwiperPosition() {
+  const swiper = document.getElementById('ocrSwiper');
+  const counter = document.getElementById('ocrCounter');
+  const prevBtn = document.getElementById('ocrPrev');
+  const nextBtn = document.getElementById('ocrNext');
+  swiper.style.transform = 'translateX(' + (-ocrIndex * 100) + '%)';
+  if (ocrFiles.length > 1) {
+    counter.style.display = 'block';
+    counter.textContent = (ocrIndex + 1) + ' / ' + ocrFiles.length;
+    prevBtn.style.display = ocrIndex > 0 ? 'block' : 'none';
+    nextBtn.style.display = ocrIndex < ocrFiles.length - 1 ? 'block' : 'none';
+  } else {
+    counter.style.display = 'none';
+    prevBtn.style.display = 'none';
+    nextBtn.style.display = 'none';
+  }
+}
+
+function ocrFullscreen() {
+  const overlay = document.getElementById('ocrFullscreenOverlay');
+  overlay.style.display = 'flex';
+  updateFullscreenView();
+}
+
+function ocrCloseFullscreen() {
+  document.getElementById('ocrFullscreenOverlay').style.display = 'none';
+}
+
+function ocrNavFull(dir) {
+  ocrIndex = Math.max(0, Math.min(ocrFiles.length - 1, ocrIndex + dir));
+  updateSwiperPosition();
+  updateFullscreenView();
+}
+
+function updateFullscreenView() {
+  document.getElementById('ocrFullImg').src = ocrFiles[ocrIndex];
+  const counter = document.getElementById('ocrFullCounter');
+  const prevBtn = document.getElementById('ocrFullPrev');
+  const nextBtn = document.getElementById('ocrFullNext');
+  if (ocrFiles.length > 1) {
+    counter.textContent = (ocrIndex + 1) + ' / ' + ocrFiles.length;
+    prevBtn.style.visibility = ocrIndex > 0 ? 'visible' : 'hidden';
+    nextBtn.style.visibility = ocrIndex < ocrFiles.length - 1 ? 'visible' : 'hidden';
+  } else {
+    counter.textContent = '';
+    prevBtn.style.visibility = 'hidden';
+    nextBtn.style.visibility = 'hidden';
+  }
+}
+
+function toggleReminder(el){
+  el.classList.toggle('off');
+  document.getElementById('ocrExpiry').style.display = el.classList.contains('off') ? 'none' : 'block';
+}
+
+// Init
+window.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.logo, #sideLogo').forEach(img => { img.src = LOGO; });
+  renderOverview('SM');
+  renderHealth('SM');
+  renderDocs();
+  setTimeout(() => openModal('consentModal'), 600);
+});
+</script>
+</body>
+</html>
